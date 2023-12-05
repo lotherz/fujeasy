@@ -5,12 +5,7 @@ client.connect(8080, '192.168.1.14', () => {
   console.log('Connected to VM');
 
   // Example: Move mouse
-  client.write(JSON.stringify({ type: 'move', x: 796, y: 618 }));
-
-  // Example: Mouse click
-  client.write(JSON.stringify({ type: 'click' }));
-
-  // Add more commands as needed
+  client.write(JSON.stringify({ type: 'click', x: 796, y: 100 }));
 });
 
 client.on('data', (data) => {
