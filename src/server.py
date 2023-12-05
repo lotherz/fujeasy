@@ -3,7 +3,7 @@ import json
 import pyautogui
 
 def process_command(command):
-    if command['type'] == 'move':
+    if command['type'] == 'click':
         pyautogui.click(command['x'], command['y'])
 
 def start_server():
@@ -13,7 +13,7 @@ def start_server():
 
     while True:
         client_socket, addr = server_socket.accept()
-        print("Connection from {addr} has been established.")
+        print("Connection from " + addr + " has been established.")
         
         data = client_socket.recv(1024)
         command = json.loads(data.decode('utf-8'))
