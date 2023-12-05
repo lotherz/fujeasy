@@ -5,8 +5,10 @@ import pyautogui
 def process_command(command):
     if command['type'] == 'move':
         pyautogui.moveTo(command['x'], command['y'])
+        print(f"Moving to {command['x']}, {command['y']}")
     elif command['type'] == 'click':
         pyautogui.click()
+        print( "Clicked")
 
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
