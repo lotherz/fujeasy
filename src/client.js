@@ -1,7 +1,7 @@
 const net = require('net');
 
 const client = new net.Socket();
-client.connect(8080, 'WINDOWS_XP_VM_IP', () => {
+client.connect(8080, '192.168.1.14', () => {
   console.log('Connected to VM');
 
   // Example: Move mouse
