@@ -5,7 +5,7 @@ import pyautogui
 def process_command(command):
     if command['type'] == 'move':
         pyautogui.moveTo(command['x'], command['y'])
-        print(f"Moving to {command['x']}, {command['y']}")
+        print("Moving to {command['x']}, {command['y']}")
     elif command['type'] == 'click':
         pyautogui.click()
         print( "Clicked")
