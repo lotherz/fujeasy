@@ -13,7 +13,7 @@ def start_server():
 
     while True:
         client_socket, addr = server_socket.accept()
-        print("Connection from " + addr + " has been established.")
+        print("Connection has been established.")
         
         data = client_socket.recv(1024)
         command = json.loads(data.decode('utf-8'))
