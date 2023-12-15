@@ -2,18 +2,10 @@ import socket
 import json
 import pyautogui
 
-pyautogui.PAUSE = 0.2
-
 def process_command(command):
-    match command['type']:
-        case 'click':
-            pyautogui.click(command['x'], command['y'])
-            print(f"Clicking at: {command['x']}, {command['y']}")
-        case 'locate':
-            img = pyautogui.locateOnScreen(command['image'])
-            if img is not None:
-                print(f"Image found at: {img}")
-                return img
+    if command['type'] == 'click':
+        pyautogui.click(command['x'], command['y'])
+        print("Clicking at: " + str(command['x']) + ", " + str(command['y']))
 
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
