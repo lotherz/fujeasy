@@ -4,6 +4,7 @@ import pyautogui
 import datetime
 
 def take_screenshot(name):
+    print("Taking screenshot...")
     screenshot = pyautogui.screenshot()
     screenshot.save(name + '.png')
 
