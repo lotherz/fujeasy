@@ -2,6 +2,8 @@ import socket
 import json
 import pyautogui
 
+pyautogui.PAUSE = 0.5
+
 def process_command(command):
     if command['type'] == 'click':
         pyautogui.click(command['x'], command['y'])
