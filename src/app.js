@@ -23,11 +23,21 @@ function settings(film_type, look, border, file_format) {
     return { film_type, look, border, file_format };
 }
 
+function wait(seconds) {
+    const milliseconds = seconds * 1000;
+    const start = Date.now();
+    let current = null;
+    do {
+        current = Date.now();
+    } while (current - start < milliseconds);
+}
+
 client.connect(8080, '192.168.1.20', () => {
     console.log('Connected to VM');
     const init_settings = settings('bw', 'standard', 'borderless', 'jpg');
     if (init_settings.film_type !== 'color') {
         click(301, 173);
+        wait(0.5);
         click(404, 289);
     }
     client.end(); // Close the connection when done
