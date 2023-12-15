@@ -7,7 +7,7 @@ const app = express();
 const port = 3000;
 
 // Assuming screenshots are saved in the same directory as the Node.js app
-const screenshotDir = __dirname;
+const screenshotDir = '../public/screenshots';
 
 app.use(express.static('../public'));
 
@@ -20,6 +20,28 @@ app.get('/screenshot/:name', (req, res) => {
         res.status(404).send('Screenshot not found');
     }
 });
+
+client.on('data', (data) => {
+    if (isImageSize) {
+        imageSize = parseInt(data.toString());
+        isImageSize = false;
+        imageBuffer = Buffer.alloc(imageSize);
+        bufferOffset = 0;
+    } else {
+        data.copy(imageBuffer, bufferOffset);
+        bufferOffset += data.length;
+        if (bufferOffset >= imageSize) {
+            console.log('Received image data');
+            fs.writeFileSync('screenshot.png', imageBuffer);
+            isImageSize = true;
+        }
+    }
+});
+
+// Function to request a screenshot
+function requestScreenshot() {
+    client.write(JSON.stringify({ type: 'screenshot' }) + '\n');
+}
 
 app.listen(port, () => console.log(`Server listening at http://localhost:${port}`));
 

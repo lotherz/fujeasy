@@ -1,17 +1,30 @@
 import socket
 import json
 import pyautogui
-import datetime
+import io
 
-def take_screenshot(name):
-    print("Taking screenshot...")
+def send_screenshot(client_socket):
+    # Take a screenshot
     screenshot = pyautogui.screenshot()
-    screenshot.save(name + '.png')
+    
+    # Save screenshot to a BytesIO object
+    img_byte_arr = io.BytesIO()
+    screenshot.save(img_byte_arr, format='PNG')
+    img_byte_arr = img_byte_arr.getvalue()
 
-def process_command(command):
+    # Send the size of the image first
+    size = len(img_byte_arr)
+    client_socket.sendall(str(size).encode('utf-8') + b'\n')
+
+    # Send the image
+    client_socket.sendall(img_byte_arr)
+
+def process_command(command, client_socket):
     if command['type'] == 'click':
         pyautogui.click(command['x'], command['y'])
         print("Clicking at: " + str(command['x']) + ", " + str(command['y']))
+    elif command['type'] == 'screenshot':
+        send_screenshot(client_socket)
 
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
