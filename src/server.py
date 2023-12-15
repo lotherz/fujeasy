@@ -7,7 +7,7 @@ pyautogui.PAUSE = 0.5
 def process_command(command):
     if command['type'] == 'click':
         pyautogui.click(command['x'], command['y'])
-        print(f"Clicking at: {command['x']}, {command['y']}")
+        print(f"Clicking at: {command['x']}, {command['y']})
 
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
