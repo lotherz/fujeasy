@@ -6,6 +6,16 @@
     <title>My Webpage</title>
 </head>
 <body>
-    <h1>Hello World</h1>
+    <script>
+        const image = document.getElementById('liveScreenshot');
+        const ws = new WebSocket('ws://localhost:3000');
+    
+        ws.onmessage = (event) => {
+            const url = URL.createObjectURL(new Blob([event.data]));
+            image.src = url;
+        };
+    
+        ws.onclose = () => console.log('WebSocket connection closed');
+    </script>
 </body>
 </html>
