@@ -2,6 +2,8 @@ import socket
 import json
 import pyautogui
 
+pyautogui.PAUSE = 0.2
+
 def process_command(command):
     match command['type']:
         case 'click':
@@ -12,7 +14,7 @@ def process_command(command):
             if img is not None:
                 print(f"Image found at: {img}")
                 return img
-            
+
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', 8080))
