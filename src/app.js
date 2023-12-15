@@ -6,7 +6,7 @@ const app = express();
 const port = 3000;
 
 //Set up express to serve static files
-app.use(express.static('public'));
+app.use(express.static('../public'));
 
 //Start server
 app.listen(port, () => {
@@ -14,10 +14,29 @@ app.listen(port, () => {
 });
 
 const client = new net.Socket();
+
+function click(x, y) {
+    client.write(JSON.stringify({ type: 'click', x: x, y: y }));
+}
+
+function settings(film_type, look, border, file_format) {
+    init_settings = [
+        film_type = film_type,
+        look = look,
+        border = border,
+        file_format = file_format
+    ]
+
+    return init_settings;
+}
+
 client.connect(8080, '192.168.1.20', () => {
     console.log('Connected to VM');
-    //Click "Start" button at start
-    client.write(JSON.stringify({ type: 'click', x: 739, y: 514 }));
+    const init_settings = settings('bw', 'standard', 'borderless', 'jpg');
+    if (init_settings.film_type !== 'color') {
+        click(301, 173);
+        click(404, 289);
+    }
 });
 
 client.on('data', (data) => {
