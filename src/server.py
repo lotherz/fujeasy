@@ -15,11 +15,18 @@ def start_server():
     while True:
         client_socket, addr = server_socket.accept()
         print("Connection has been established.")
-        
-        data = client_socket.recv(1024)
-        command = json.loads(data.decode('utf-8'))
-        process_command(command)
+
+        while True:
+            data = client_socket.recv(1024)
+            if not data:
+                break  # Exit the loop if no data is received, indicating the client has closed the connection
+            try:
+                command = json.loads(data.decode('utf-8'))
+                process_command(command)
+            except json.JSONDecodeError:
+                print("Received non-JSON data or incomplete JSON data.")
 
         client_socket.close()
+        print("Connection closed.")
 
 start_server()

@@ -5,48 +5,47 @@ const app = express();
 const port = 3000;
 
 app.use(express.static('../public'));
-
-app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`);
-});
+app.listen(port, () => console.log(`Server listening at http://localhost:${port}`));
 
 const client = new net.Socket();
-client.on('error', (err) => {
-    console.error('Socket error:', err);
-});
+client.on('error', (err) => console.error('Socket error:', err));
 
-function click(x, y) {
-    client.write(JSON.stringify({ type: 'click', x: x, y: y }));
-}
-
-function settings(film_type, look, border, file_format) {
-    return { film_type, look, border, file_format };
-}
-
-function wait(seconds) {
-    const milliseconds = seconds * 1000;
-    const start = Date.now();
-    let current = null;
-    do {
-        current = Date.now();
-    } while (current - start < milliseconds);
-}
+let clickQueue = [];
+let isProcessingClicks = false;
 
 client.connect(8080, '192.168.1.20', () => {
     console.log('Connected to VM');
-    const init_settings = settings('bw', 'standard', 'borderless', 'jpg');
-    if (init_settings.film_type !== 'color') {
-        click(301, 173);
-        wait(0.5);
-        click(404, 289);
+    addClick(301, 173);
+    addClick(404, 289);
+    processClickQueue();
+});
+
+function addClick(x, y) {
+    clickQueue.push({ x, y });
+    if (!isProcessingClicks) {
+        processClickQueue();
     }
-    client.end(); // Close the connection when done
-});
+}
 
-client.on('data', (data) => {
-    console.log('Received: ' + data);
-});
+function processClickQueue() {
+    if (clickQueue.length === 0) {
+        client.end(); // Close the connection when all clicks are processed
+        return;
+    }
 
+    isProcessingClicks = true;
+    let click = clickQueue.shift();
+    sendClick(click.x, click.y);
+}
+
+function sendClick(x, y) {
+    client.write(JSON.stringify({ type: 'click', x: x, y: y }) + '\n');
+    console.log('Sent click at ' + x + ', ' + y);
+    setTimeout(processClickQueue, 2000); // Delay between clicks
+}
+
+client.on('data', (data) => console.log('Received: ' + data));
 client.on('close', () => {
+    isProcessingClicks = false;
     console.log('Connection closed');
 });
