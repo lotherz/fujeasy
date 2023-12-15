@@ -14,7 +14,7 @@ app.listen(port, () => {
 });
 
 const client = new net.Socket();
-client.connect(8080, '192.168.1.14', () => {
+client.connect(8080, '192.168.1.20', () => {
     console.log('Connected to VM');
     //Click "Start" button at start
     client.write(JSON.stringify({ type: 'click', x: 739, y: 514 }));
