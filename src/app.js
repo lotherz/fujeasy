@@ -1,19 +1,30 @@
 const net = require('net');
 const express = require('express');
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const port = 3000;
 
-// Assuming screenshots are saved in the same directory as the Node.js app
-const screenshotDir = '../public/screenshots';
+let clickQueue = [];
+let isProcessingClicks = false;
+let settings = {
+    film_type: "colour",
+    look: "soft",
+    border: 0,
+    file_format: "JPEG"
+};
+
+const client = new net.Socket();
+let isImageSize = true;
+let imageSize = 0;
+let imageBuffer;
+let bufferOffset = 0;
 
 app.use(express.static('../public'));
 
-// Endpoint to serve screenshots
-app.get('/screenshot/:name', (req, res) => {
-    const screenshotPath = path.join(screenshotDir, req.params.name + '.png');
+app.get('/screenshot', (req, res) => {
+    const screenshotPath = path.join(__dirname, 'screenshot.png');
     if (fs.existsSync(screenshotPath)) {
         res.sendFile(screenshotPath);
     } else {
@@ -21,58 +32,13 @@ app.get('/screenshot/:name', (req, res) => {
     }
 });
 
-client.on('data', (data) => {
-    if (isImageSize) {
-        imageSize = parseInt(data.toString());
-        isImageSize = false;
-        imageBuffer = Buffer.alloc(imageSize);
-        bufferOffset = 0;
-    } else {
-        data.copy(imageBuffer, bufferOffset);
-        bufferOffset += data.length;
-        if (bufferOffset >= imageSize) {
-            console.log('Received image data');
-            fs.writeFileSync('screenshot.png', imageBuffer);
-            isImageSize = true;
-        }
-    }
-});
-
-// Function to request a screenshot
-function requestScreenshot() {
-    client.write(JSON.stringify({ type: 'screenshot' }) + '\n');
-}
-
 app.listen(port, () => console.log(`Server listening at http://localhost:${port}`));
 
-const client = new net.Socket();
 client.on('error', (err) => console.error('Socket error:', err));
-
-let clickQueue = [];
-let isProcessingClicks = false;
-
-let settings = {
-    film_type : "colour",
-    look : "soft",
-    border : 0,
-    file_format : "JPEG"
-}
-
-const baseSettings = settings;
-
-function updateSettings(film_type, look, border, file_format) {
-
-    settings = {
-        film_type: film_type,
-        look : look,
-        border : border,
-        file_format : file_format
-    }
-}
 
 client.connect(8080, '192.168.1.20', () => {
     console.log('Connected to VM');
-
+    requestScreenshot();
     updateSettings("bw", "soft", 1, "TIFF");
 
     if (settings.film_type === "colour") {
@@ -101,6 +67,29 @@ client.connect(8080, '192.168.1.20', () => {
     
     processClickQueue();
 });
+
+client.on('data', (data) => {
+    if (isImageSize) {
+        imageSize = parseInt(data.toString());
+        isImageSize = false;
+        imageBuffer = Buffer.alloc(imageSize);
+        bufferOffset = 0;
+    } else {
+        data.copy(imageBuffer, bufferOffset);
+        bufferOffset += data.length;
+        if (bufferOffset >= imageSize) {
+            console.log('Received image data');
+            fs.writeFileSync('screenshot.png', imageBuffer);
+            isImageSize = true;
+            // Actions after receiving screenshot
+        }
+    }
+    // Handle other types of data...
+});
+
+function requestScreenshot() {
+    client.write(JSON.stringify({ type: 'screenshot' }) + '\n');
+}
 
 function addClick(x, y) {
     clickQueue.push({ x, y });

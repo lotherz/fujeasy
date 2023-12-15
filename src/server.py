@@ -3,21 +3,17 @@ import json
 import pyautogui
 import io
 
-def send_screenshot(client_socket):
-    # Take a screenshot
+def take_screenshot():
     screenshot = pyautogui.screenshot()
-    
-    # Save screenshot to a BytesIO object
     img_byte_arr = io.BytesIO()
     screenshot.save(img_byte_arr, format='PNG')
-    img_byte_arr = img_byte_arr.getvalue()
+    return img_byte_arr.getvalue()
 
-    # Send the size of the image first
-    size = len(img_byte_arr)
+def send_screenshot(client_socket):
+    img_data = take_screenshot()
+    size = len(img_data)
     client_socket.sendall(str(size).encode('utf-8') + b'\n')
-
-    # Send the image
-    client_socket.sendall(img_byte_arr)
+    client_socket.sendall(img_data)
 
 def process_command(command, client_socket):
     if command['type'] == 'click':
@@ -34,7 +30,6 @@ def start_server():
     while True:
         client_socket, addr = server_socket.accept()
         print("Connection has been established.")
-        take_screenshot("start_screenshot")
 
         while True:
             data = client_socket.recv(1024)
@@ -42,11 +37,10 @@ def start_server():
                 break
             try:
                 command = json.loads(data.decode('utf-8'))
-                process_command(command)
+                process_command(command, client_socket)
             except json.JSONDecodeError:
                 print("Received non-JSON data or incomplete JSON data.")
 
-        take_screenshot("end_screenshot")
         client_socket.close()
         print("Connection closed.")
 
