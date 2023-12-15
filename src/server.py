@@ -6,6 +6,11 @@ def process_command(command):
     if command['type'] == 'click':
         pyautogui.click(command['x'], command['y'])
         print("Clicking at: " + str(command['x']) + ", " + str(command['y']))
+    if command['type'] == 'locate':
+        img = pyautogui.locateOnScreen(command['image'])
+        if img is not None:
+            print("Image found at: " + str(img))
+            return img
 
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
