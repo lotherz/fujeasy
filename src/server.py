@@ -5,7 +5,7 @@ import datetime
 
 def take_screenshot(name):
     screenshot = pyautogui.screenshot()
-    screenshot.save(f'{name}.png')
+    screenshot.save(name + '.png')
 
 def process_command(command):
     if command['type'] == 'click':
