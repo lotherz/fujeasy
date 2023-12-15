@@ -15,6 +15,15 @@ let settings = {
     file_format: "JPEG"
 };
 
+function updateSettings(film_type, look, border, file_format) {
+    settings = {
+        film_type: film_type,
+        look: look,
+        border: border,
+        file_format: file_format
+    };
+}
+
 const client = new net.Socket();
 let isImageSize = true;
 let imageSize = 0;
@@ -39,7 +48,7 @@ client.on('error', (err) => console.error('Socket error:', err));
 client.connect(8080, '192.168.1.20', () => {
     console.log('Connected to VM');
     requestScreenshot();
-    updateSettings("bw", "soft", 1, "TIFF");
+    updateSettings("colour", "soft", 0, "JPEG");
 
     if (settings.film_type === "colour") {
         addClick(301, 173);

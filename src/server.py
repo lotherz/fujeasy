@@ -38,7 +38,7 @@ def start_server():
             try:
                 command = json.loads(data.decode('utf-8'))
                 process_command(command, client_socket)
-            except json.JSONDecodeError:
+            except ValueError:  # Use ValueError for Python 3.4
                 print("Received non-JSON data or incomplete JSON data.")
 
         client_socket.close()
