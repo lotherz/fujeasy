@@ -36,7 +36,7 @@ def compare_with_reference(screenshot_data, reference_image_path, region):
     
     # Check if the reference image is loaded correctly
     if reference_image is None:
-        print(f"Error loading reference image: {reference_image_path}")
+        print("Error loading reference image: " + reference_image_path)
         return False
 
     # Convert the reference image to grayscale
