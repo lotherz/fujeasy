@@ -2,6 +2,7 @@ import socket
 import json
 import pyautogui
 import io
+import os
 import cv2
 import numpy as np
 from PIL import Image
