@@ -8,9 +8,9 @@ from PIL import Image
 
 # Assuming you have reference images stored as 'film_type_true.png', 'border_true.png', 'file_format_true.png'
 reference_images = {
-    "film_type": "./public/screenshots/film_type_true.png",
-    "border": "./public/screenshots/border_true.png",
-    "file_format": "./public/screenshots/file_format_true.png"
+    "film_type": "film_type_true.png",
+    "border": "border_true.png",
+    "file_format": "file_format_true.png"
 }
 
 def derive_settings():
