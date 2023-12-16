@@ -95,15 +95,21 @@ def start_server():
         client_socket, addr = server_socket.accept()
         print("Connection has been established.")
 
+        buffer = ""
         while True:
-            data = client_socket.recv(1024)
+            data = client_socket.recv(1024).decode('utf-8')
             if not data:
                 break
+
+            buffer += data
             try:
-                command = json.loads(data.decode('utf-8'))
+                command = json.loads(buffer)
                 process_command(command, client_socket)
-            except ValueError:  # Use ValueError for Python 3.4
-                print("Received non-JSON data or incomplete JSON data.")
+                buffer = ""  # Clear the buffer after successful processing
+            except ValueError as e:
+                # If JSON is incomplete, continue receiving data
+                print("Received incomplete JSON data.")
+                continue
 
         client_socket.close()
         print("Connection closed.")

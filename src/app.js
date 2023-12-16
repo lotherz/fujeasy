@@ -18,14 +18,20 @@ let imageSize = 0;
 let imageBuffer;
 let bufferOffset = 0;
 let jsonMessages = [];
-let currentSettings = null;
+let serverSettings = null;
 
 let settings = {
-    film_type: "colour",
+    film_type: "bw",
     look: "standard",
     border: 0,
     file_format: "JPEG"
 };
+
+function input() {
+    rl.question('Enter command: ', (command) => {
+        handleCommand(command);
+    });
+}
 
 // Readline interface for user input
 const rl = readline.createInterface({
@@ -37,7 +43,7 @@ const rl = readline.createInterface({
 const clickLocations = {
     'colour': [[301, 173], [279, 279]],
     'bw': [[301, 173], [404, 289]],
-    'border': [[612, 109]],
+    'border': [[612, 109]], 
     'no_border': [[487, 114]],
     'tiff': [[450, 405], [214, 262], [615, 191]],
     'jpeg': [[450, 405], [217, 247], [615, 191]]
@@ -60,11 +66,15 @@ client.on('data', (data) => {
         let jsonData = JSON.parse(data.toString());
         jsonMessages.push(jsonData);
         console.log('JSON Data received:', jsonData);
-        if (jsonData.type === 'current_settings') {
-            currentSettings = jsonData.settings;
+        serverSettings = { film_type: jsonData.film_type, look: settings.look, border: jsonData.border, file_format: jsonData.file_format };
+
+        if (jsonData.type === 'settings') {
+            console.log('Server settings:', serverSettings);
             compareAndProcessSettings();
-            input(); // Prompt for the next command
         }
+
+        input(); // Prompt for the next command
+        
     } catch (e) {
         // Accumulate image data if it's not JSON
         if (isImageSize) {
@@ -101,6 +111,8 @@ client.on('data', (data) => {
 
 client.connect(8080, '192.168.1.20', () => {
     console.log('Connected to VM');
+    requestserverSettings();
+    input();
 });
 
 client.on('close', () => {
@@ -108,8 +120,8 @@ client.on('close', () => {
     console.log('Connection closed');
 });
 
-function requestCurrentSettings() {
-    client.write(JSON.stringify({ type: 'get_current_settings' }) + '\n');
+function requestserverSettings() {
+    client.write(JSON.stringify({ type: 'get_settings' }) + '\n');
 }
 
 function processClicksForSetting(setting) {
@@ -120,22 +132,22 @@ function processClicksForSetting(setting) {
 }
 
 function compareAndProcessSettings() {
-    if (!currentSettings) {
+    if (!serverSettings) {
         console.log('Current settings not available.');
         return;
     }
 
-    if (currentSettings.film_type !== settings.film_type) {
+    if (serverSettings.film_type !== settings.film_type) {
         const filmTypeSetting = settings.film_type === 'colour' ? 'colour' : 'bw';
         processClicksForSetting(filmTypeSetting);
     }
 
-    if (currentSettings.border !== settings.border) {
+    if (serverSettings.border !== settings.border) {
         const borderSetting = settings.border === 1 ? 'border' : 'no_border';
         processClicksForSetting(borderSetting);
     }
 
-    if (currentSettings.file_format !== settings.file_format) {
+    if (serverSettings.file_format !== settings.file_format) {
         const fileFormatSetting = settings.file_format === 'TIFF' ? 'tiff' : 'jpeg';
         processClicksForSetting(fileFormatSetting);
     }
@@ -153,6 +165,7 @@ function addClick(x, y) {
 function processClickQueue() {
     if (clickQueue.length === 0) {
         //client.end(); // Close the connection when all clicks are processed
+        console.log('All clicks processed');
         return;
     }
 
@@ -162,16 +175,37 @@ function processClickQueue() {
 }
 
 function sendClick(x, y) {
-    client.write(JSON.stringify({ type: 'click', x: x, y: y }) + '\n');
-    console.log('Sent click at ' + x + ', ' + y);
-    setTimeout(processClickQueue, 500); // Delay between clicks
+    const command = JSON.stringify({ type: 'click', x: x, y: y });
+    console.log(`Sending command: ${command}`);  // Debug log
+    client.write(command + '\n');
 }
+
 function handleCommand(command) {
     switch (command) {
+        case 'sync':
+            //This case will ensure that the client and server are in sync with each other
+            if (settings !== serverSettings) {
+                console.log('Client and server are not in sync');
+                compareAndProcessSettings();
+            } else {
+                console.log('Client and server are in sync');
+            }
+        case '':
+            requestserverSettings();
+            input(); // Prompt for next command
+            break
+        case 'clientSettings':
+            console.log(settings);
+            input();
+            break;
+        case 'serverSettings':
+            console.log(serverSettings);
+            input();
+            break;
         case '?':
         case 'help':
             console.log('Commands: screenshot, click, settings, exit');
-            input();
+            
             break;
         case 'screenshot':
             requestScreenshot();
@@ -187,12 +221,11 @@ function handleCommand(command) {
             });
             break;
         case 'settings':
-                    rl.question('Enter film type (colour/bw): ', (film_type) => {
+            rl.question('Enter film type (colour/bw): ', (film_type) => {
                 rl.question('Enter border (0/1): ', (border) => {
                     rl.question('Enter file format (JPEG/TIFF): ', (file_format) => {
-                        let lookTemp = settings.look;
-                        settings = { film_type, lookTemp, border, file_format };
-                        requestCurrentSettings();
+                        settings = { film_type: film_type, look: settings.look, border: parseInt(border), file_format: file_format };
+                        compareAndProcessSettings();
                         input(); // Prompt for next command
                     });
                 });
@@ -203,7 +236,7 @@ function handleCommand(command) {
             client.end();
             break;
         case 'run':
-            requestCurrentSettings();
+            requestserverSettings();
             input();
             break;
         default:
@@ -212,15 +245,6 @@ function handleCommand(command) {
             break;
     }
 }
-
-
-function input() {
-    rl.question('Enter command: ', (command) => {
-        handleCommand(command);
-    });
-}
-
-input(); // Initial call to start the command input loop
 
 rl.on('close', () => {
     console.log('Exiting program');
