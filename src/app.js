@@ -17,6 +17,7 @@ let isImageSize = true;
 let imageSize = 0;
 let imageBuffer;
 let bufferOffset = 0;
+let jsonData;
 let settings = {
     film_type: "colour",
     look: "soft",
@@ -32,12 +33,16 @@ function updateSettings(film_type, look, border, file_format) {
         border: border,
         file_format: file_format
     };
+
+    if (jsonData) {
+        console.log(jsonData.toString())
+    }
 }
 
 console.log("PROGRAM STARTED");
 
 function readSettings() {
-    
+    //requestScreenshot();
 }
 
 app.use(express.static('../public'));
@@ -71,7 +76,7 @@ client.on('error', (err) => console.error('Socket error:', err));
 
 client.connect(8080, '192.168.1.20', () => {
     console.log('Connected to VM');
-    updateSettings("colour", "soft", 0, "JPEG");
+    updateSettings("bw", "soft", 1, "TIFF");
     readSettings();
 
     if (settings.film_type === "colour") {
@@ -101,57 +106,52 @@ client.connect(8080, '192.168.1.20', () => {
     
 });
 
+let jsonBuffer = '';
+let jsonMessages = [];
+
+
 client.on('data', (data) => {
     try {
-        if (isImageSize) {
-            
-        } else {
-            // Accumulate the image data into the buffer
-            data.copy(imageBuffer, bufferOffset);
-            bufferOffset += data.length;
-
-            if (bufferOffset >= imageSize) {
-                console.log('Received image data');
-                const imgBuffer = imageBuffer.slice(0, bufferOffset); // Slice the buffer to actual size
-                fs.writeFileSync('../public/screenshots/screenshot.png', imgBuffer);
-                isImageSize = true;
-        
-                // Send the image data to all connected WebSocket clients
-                wss.clients.forEach((client) => {
-                    if (client.readyState === WebSocket.OPEN) {
-                        client.send(imgBuffer);
-                    }
-                });
-            }
+        // Check if the data is JSON
+        try {
+            let jsonData = JSON.parse(data.toString());
+            jsonMessages.push(jsonData); // Add parsed JSON to the array
+            //console.log('JSON Data received:', jsonData);
+            return; // Return early since we've handled the JSON data
+        } catch (e) {
+            // Not JSON data, proceed to image handling
         }
-    } catch (error) {
-        console.error('Error handling data:', error);
-    }
-});
 
-client.on('data', (data) => {
-    try {
-        // Check if expecting image size or image data
-        if (isImageSize || bufferOffset < imageSize) {
-           // Parse the image size and prepare the buffer
-           imageSize = parseInt(data.toString());
-           isImageSize = false;
-           imageBuffer = Buffer.alloc(imageSize);
-           bufferOffset = 0;
-        } else {
-            // Try to parse the data as JSON
-            let jsonData;
-            try {
-                jsonData = JSON.parse(data.toString());
-            } catch (e) {
-                console.error('Received non-JSON data:', data.toString());
+        if (isImageSize) {
+            // Parse the image size and prepare the buffer
+            imageSize = parseInt(data.toString());
+            if (isNaN(imageSize)) {
+                console.error('Invalid image size received:', data.toString());
                 return;
             }
-
-            // Handle JSON data (e.g., update settings)
-            if (jsonData && jsonData.type === 'settings') {
-                updateSettings(jsonData.film_type, jsonData.look, jsonData.border, jsonData.file_format);
-                console.log('Settings updated:', jsonData);
+            isImageSize = false;
+            imageBuffer = Buffer.alloc(imageSize);
+            bufferOffset = 0;
+        } else {
+            if (isImageSize || bufferOffset < imageSize) {
+                // Parse the image size and prepare the buffer
+                imageSize = parseInt(data.toString());
+                isImageSize = false;
+                imageBuffer = Buffer.alloc(imageSize);
+                bufferOffset = 0;
+            } else {
+                // Accumulate the data in the JSON buffer
+                jsonBuffer += data.toString();
+    
+                // Try to parse the accumulated data as JSON
+                try {
+                    let jsonData = JSON.parse(jsonBuffer);
+                    jsonBuffer = ''; // Clear the buffer after successful parsing
+                    jsonMessages.push(jsonData); // Add parsed JSON to the array
+                    //console.log('JSON Data received:', jsonData);
+                } catch (e) {
+                    // Parsing failed, wait for more data
+                }
             }
         }
     } catch (error) {
@@ -190,7 +190,6 @@ function sendClick(x, y) {
     setTimeout(processClickQueue, 2000); // Delay between clicks
 }
 
-client.on('data', (data) => console.log('Received: ' + data));
 client.on('close', () => {
     isProcessingClicks = false;
     console.log('Connection closed');
