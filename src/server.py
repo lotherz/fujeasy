@@ -81,11 +81,11 @@ def process_command(command, client_socket):
         send_screenshot(client_socket)
     elif command['type'] == 'get_settings':
         settings = derive_settings()
+        print(settings)
         settings_json = json.dumps(settings)
         client_socket.sendall(settings_json.encode('utf-8'))
 
 def start_server():
-    print(derive_settings())
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', 8080))
     server_socket.listen(5)

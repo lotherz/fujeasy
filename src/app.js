@@ -25,6 +25,7 @@ let settings = {
 };
 
 function updateSettings(film_type, look, border, file_format) {
+    client.write(JSON.stringify({ type: 'get_settings'}));
     settings = {
         film_type: film_type,
         look: look,
@@ -34,6 +35,10 @@ function updateSettings(film_type, look, border, file_format) {
 }
 
 console.log("PROGRAM STARTED");
+
+function readSettings() {
+    
+}
 
 app.use(express.static('../public'));
 
@@ -98,6 +103,34 @@ client.connect(8080, '192.168.1.20', () => {
 
 client.on('data', (data) => {
     try {
+        if (isImageSize) {
+            
+        } else {
+            // Accumulate the image data into the buffer
+            data.copy(imageBuffer, bufferOffset);
+            bufferOffset += data.length;
+
+            if (bufferOffset >= imageSize) {
+                console.log('Received image data');
+                const imgBuffer = imageBuffer.slice(0, bufferOffset); // Slice the buffer to actual size
+                fs.writeFileSync('../public/screenshots/screenshot.png', imgBuffer);
+                isImageSize = true;
+        
+                // Send the image data to all connected WebSocket clients
+                wss.clients.forEach((client) => {
+                    if (client.readyState === WebSocket.OPEN) {
+                        client.send(imgBuffer);
+                    }
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error handling data:', error);
+    }
+});
+
+client.on('data', (data) => {
+    try {
         // Check if expecting image size or image data
         if (isImageSize || bufferOffset < imageSize) {
            // Parse the image size and prepare the buffer
@@ -117,7 +150,7 @@ client.on('data', (data) => {
 
             // Handle JSON data (e.g., update settings)
             if (jsonData && jsonData.type === 'settings') {
-                updateSettings(jsonData.film_type == 1 ? "colour" : "bw", settings.look, jsonData.border, jsonData.file_format);
+                updateSettings(jsonData.film_type, jsonData.look, jsonData.border, jsonData.file_format);
                 console.log('Settings updated:', jsonData);
             }
         }
@@ -125,6 +158,12 @@ client.on('data', (data) => {
         console.error('Error handling data:', error);
     }
 });
+
+
+
+function requestScreenshot() {
+    client.write(JSON.stringify({ type: 'screenshot' }) + '\n');
+}
 
 function addClick(x, y) {
     clickQueue.push({ x, y });
