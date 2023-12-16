@@ -9,9 +9,9 @@ import os
 
 file_path = "../public/screenshots/film_type_true.png"
 if os.path.exists(file_path):
-    print(f"File found: {file_path}")
+    print("File found:" + file_path)
 else:
-    print(f"File not found: {file_path}")
+    print("File not found:" + file_path)
 
 # Assuming you have reference images stored as 'film_type_true.png', 'border_true.png', 'file_format_true.png'
 reference_images = {
