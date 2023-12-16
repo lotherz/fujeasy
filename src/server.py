@@ -24,9 +24,9 @@ def derive_settings():
 
     screenshot = take_screenshot()
     settings = {
-        "film_type": compare_with_reference(screenshot, reference_images["film_type"], regions["film_type"]),
-        "border": compare_with_reference(screenshot, reference_images["border"], regions["border"]),
-        "file_format": compare_with_reference(screenshot, reference_images["file_format"], regions["file_format"])
+        "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], regions["film_type"]) else "bw",
+        "border": 0 if compare_with_reference(screenshot, reference_images["border"], regions["border"]) else 1,
+        "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], regions["file_format"]) else "TIFF"
     }
     return settings
 
@@ -79,6 +79,10 @@ def process_command(command, client_socket):
         print("Clicking at: " + str(command['x']) + ", " + str(command['y']))
     elif command['type'] == 'screenshot':
         send_screenshot(client_socket)
+    elif command['type'] == 'get_settings':
+        settings = derive_settings()
+        settings_json = json.dumps(settings)
+        client_socket.sendall(settings_json.encode('utf-8'))
 
 def start_server():
     print(derive_settings())

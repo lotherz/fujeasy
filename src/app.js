@@ -35,10 +35,6 @@ function updateSettings(film_type, look, border, file_format) {
 
 console.log("PROGRAM STARTED");
 
-function readSettings() {
-    requestScreenshot();
-}
-
 app.use(express.static('../public'));
 
 // WebSocket connection with clients
@@ -102,40 +98,33 @@ client.connect(8080, '192.168.1.20', () => {
 
 client.on('data', (data) => {
     try {
-        if (isImageSize) {
-            // Parse the image size and prepare the buffer
-            imageSize = parseInt(data.toString());
-            isImageSize = false;
-            imageBuffer = Buffer.alloc(imageSize);
-            bufferOffset = 0;
+        // Check if expecting image size or image data
+        if (isImageSize || bufferOffset < imageSize) {
+           // Parse the image size and prepare the buffer
+           imageSize = parseInt(data.toString());
+           isImageSize = false;
+           imageBuffer = Buffer.alloc(imageSize);
+           bufferOffset = 0;
         } else {
-            // Accumulate the image data into the buffer
-            data.copy(imageBuffer, bufferOffset);
-            bufferOffset += data.length;
+            // Try to parse the data as JSON
+            let jsonData;
+            try {
+                jsonData = JSON.parse(data.toString());
+            } catch (e) {
+                console.error('Received non-JSON data:', data.toString());
+                return;
+            }
 
-            if (bufferOffset >= imageSize) {
-                console.log('Received image data');
-                const imgBuffer = imageBuffer.slice(0, bufferOffset); // Slice the buffer to actual size
-                fs.writeFileSync('../public/screenshots/screenshot.png', imgBuffer);
-                isImageSize = true;
-        
-                // Send the image data to all connected WebSocket clients
-                wss.clients.forEach((client) => {
-                    if (client.readyState === WebSocket.OPEN) {
-                        client.send(imgBuffer);
-                    }
-                });
+            // Handle JSON data (e.g., update settings)
+            if (jsonData && jsonData.type === 'settings') {
+                updateSettings(jsonData.film_type == 1 ? "colour" : "bw", settings.look, jsonData.border, jsonData.file_format);
+                console.log('Settings updated:', jsonData);
             }
         }
     } catch (error) {
         console.error('Error handling data:', error);
     }
 });
-
-
-function requestScreenshot() {
-    client.write(JSON.stringify({ type: 'screenshot' }) + '\n');
-}
 
 function addClick(x, y) {
     clickQueue.push({ x, y });
