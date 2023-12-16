@@ -71,6 +71,7 @@ client.on('error', (err) => console.error('Socket error:', err));
 client.connect(8080, '192.168.1.20', () => {
     console.log('Connected to VM');
     updateSettings("colour", "soft", 0, "JPEG");
+    readSettings();
 
     if (settings.film_type === "colour") {
         addClick(301, 173);
@@ -158,7 +159,7 @@ function processClickQueue() {
 function sendClick(x, y) {
     client.write(JSON.stringify({ type: 'click', x: x, y: y }) + '\n');
     console.log('Sent click at ' + x + ', ' + y);
-    setTimeout(processClickQueue, 1000); // Delay between clicks
+    setTimeout(processClickQueue, 2000); // Delay between clicks
 }
 
 client.on('data', (data) => console.log('Received: ' + data));

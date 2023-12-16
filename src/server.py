@@ -6,12 +6,20 @@ import cv2
 import numpy as np
 from PIL import Image
 
+# Assuming you have reference images stored as 'film_type_true.png', 'border_true.png', 'file_format_true.png'
+reference_images = {
+    "film_type": "../public/screenshots/film_type_true.png",
+    "border": "../public/screenshots/border_true.png",
+    "file_format": "../public/screenshots/file_format_true.png"
+}
+
 def derive_settings():
     # Define regions for each setting
     regions = {
-        "film_type": (100, 100, 50, 50),  # Example coordinates for film_type
-        "border": (150, 100, 50, 50),     # Example coordinates for border
-        "file_format": (200, 100, 50, 50) # Example coordinates for file_format
+        "film_type":    (235, 141, 127, 79),    # Example coordinates for film_type
+        "border":       (453, 100, 64, 21),     # Example coordinates for border
+        "file_format":  (387, 376, 115, 67)     # Example coordinates for file_format
+        #               (x-coordinate, y-coordinate, width, height)
     }
 
     screenshot = take_screenshot()
@@ -36,7 +44,14 @@ def compare_with_reference(screenshot_data, reference_image_path, region):
     x, y, w, h = region
     region_of_interest = screenshot_image[y:y+h, x:x+w]
 
-    # Rest of the comparison logic remains the same...
+    # Compare the region of interest with the reference image
+    # Note: You may need to adjust the method of comparison based on your specific needs
+    similarity = cv2.matchTemplate(region_of_interest, reference_image, cv2.TM_CCOEFF_NORMED)
+    _, max_val, _, _ = cv2.minMaxLoc(similarity)
+
+    # Assuming a threshold for similarity to consider the setting as True
+    threshold = 0.8
+    return max_val >= threshold
 
 
 def take_screenshot():
@@ -59,6 +74,7 @@ def process_command(command, client_socket):
         send_screenshot(client_socket)
 
 def start_server():
+    print(derive_settings())
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', 8080))
     server_socket.listen(5)
