@@ -5,19 +5,12 @@ import io
 import cv2
 import numpy as np
 from PIL import Image
-import os
-
-file_path = "../public/screenshots/film_type_true.png"
-if os.path.exists(file_path):
-    print("File found:" + file_path)
-else:
-    print("File not found:" + file_path)
 
 # Assuming you have reference images stored as 'film_type_true.png', 'border_true.png', 'file_format_true.png'
 reference_images = {
-    "film_type": "../public/screenshots/film_type_true.png",
-    "border": "../public/screenshots/border_true.png",
-    "file_format": "../public/screenshots/file_format_true.png"
+    "film_type": "//Mac/Home/Documents/fujeasy/public/screenshots/film_type_true.png",
+    "border": "//Mac/Home/Documents/fujeasy/public/screenshots/border_true.png",
+    "file_format": "//Mac/Home/Documents/fujeasy/public/screenshots/file_format_true.png"
 }
 
 def derive_settings():
