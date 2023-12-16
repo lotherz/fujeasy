@@ -33,6 +33,7 @@ function updateSettings(film_type, look, border, file_format) {
     };
 }
 
+<<<<<<< HEAD
 console.log("PROGRAM STARTED");
 
 function readSettings() {
@@ -50,6 +51,8 @@ wss.on('connection', (ws) => {
     });
 });
 
+=======
+>>>>>>> 2e3e4297bf1ef5f09a97ee830fdae7aaf1bab8fb
 const client = new net.Socket();
 client.on('error', (err) => console.error('Socket error:', err));
 
@@ -70,6 +73,10 @@ client.on('error', (err) => console.error('Socket error:', err));
 
 client.connect(8080, '192.168.1.20', () => {
     console.log('Connected to VM');
+<<<<<<< HEAD
+=======
+    requestScreenshot();
+>>>>>>> 2e3e4297bf1ef5f09a97ee830fdae7aaf1bab8fb
     updateSettings("colour", "soft", 0, "JPEG");
 
     if (settings.film_type === "colour") {
