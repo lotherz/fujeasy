@@ -74,7 +74,7 @@ def send_screenshot(client_socket):
     client_socket.sendall(img_data)
 
 def process_command(command, client_socket):
-    print(f"Received command: " + command)
+    print("Received command: " + command)
     if command['type'] == 'click':
         pyautogui.click(command['x'], command['y'])
         print("Clicking at: " + str(command['x']) + ", " + str(command['y']))
