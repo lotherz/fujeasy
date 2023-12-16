@@ -76,7 +76,7 @@ client.on('error', (err) => console.error('Socket error:', err));
 
 client.connect(8080, '192.168.1.20', () => {
     console.log('Connected to VM');
-    updateSettings("bw", "soft", 1, "TIFF");
+    updateSettings("colour", "soft", 0, "TIFF");
     readSettings();
 
     if (settings.film_type === "colour") {
@@ -116,7 +116,7 @@ client.on('data', (data) => {
         try {
             let jsonData = JSON.parse(data.toString());
             jsonMessages.push(jsonData); // Add parsed JSON to the array
-            //console.log('JSON Data received:', jsonData);
+            console.log('JSON Data received:', jsonData);
             return; // Return early since we've handled the JSON data
         } catch (e) {
             // Not JSON data, proceed to image handling
@@ -187,7 +187,7 @@ function processClickQueue() {
 function sendClick(x, y) {
     client.write(JSON.stringify({ type: 'click', x: x, y: y }) + '\n');
     console.log('Sent click at ' + x + ', ' + y);
-    setTimeout(processClickQueue, 2000); // Delay between clicks
+    setTimeout(processClickQueue, 500); // Delay between clicks
 }
 
 client.on('close', () => {

@@ -25,7 +25,7 @@ def derive_settings():
     screenshot = take_screenshot()
     settings = {
         "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], regions["film_type"]) else "bw",
-        "border": compare_with_reference(screenshot, reference_images["border"], regions["border"]),
+        "border": 1 if compare_with_reference(screenshot, reference_images["border"], regions["border"]) else 0,
         "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], regions["file_format"]) else "TIFF"
     }
     return settings
