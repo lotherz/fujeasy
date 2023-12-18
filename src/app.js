@@ -266,7 +266,6 @@ function handleCommand(command) {
             rl.question('Enter x: ', (x) => {
                 rl.question('Enter y: ', (y) => {
                     addClick(parseInt(x, 10), parseInt(y, 10));
-                    compareAndProcessSettings();
                     input();
                 });
             });
@@ -284,10 +283,6 @@ function handleCommand(command) {
         case 'exit':
             rl.close();
             client.end();
-            break;
-        case 'run':
-            requestserverSettings();
-            input();
             break;
         default:
             console.log('\x1b[31m%s\x1b[0m', 'Invalid command');

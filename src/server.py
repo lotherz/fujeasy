@@ -77,12 +77,17 @@ def send_screenshot(client_socket):
 def process_command(command, client_socket):
     print("Received command: " + str(command))
     if command['type'] == 'click':
+        
         pyautogui.click(command['x'], command['y'])
         print("Clicking at: " + str(command['x']) + ", " + str(command['y']))
+        
     elif command['type'] == 'screenshot':
+        
         send_screenshot(client_socket)
         print("Screenshot Sent")
+        
     elif command['type'] == 'get_settings':
+        
         settings = derive_settings()
         print(settings)
         settings_json = json.dumps(settings)
