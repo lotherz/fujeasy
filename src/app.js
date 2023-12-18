@@ -208,7 +208,7 @@ function handleCommand(command) {
         case '?':
         case 'help':
             console.log('Commands: screenshot, click, settings, exit');
-            
+            input();
             break;
         case 'screenshot':
             requestScreenshot();
