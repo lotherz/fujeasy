@@ -20,12 +20,14 @@ let bufferOffset = 0;
 let jsonMessages = [];
 let serverSettings = null;
 let firstLoad = 0;
+let isScanning = false;
 
 let settings = {
     film_type: "colour",
     look: "standard",
     border: 0,
-    file_format: "JPEG"
+    file_format: "JPEG",
+    state: "settings"
 };
 
 function input() {
@@ -47,45 +49,49 @@ const clickLocations = {
     'border': [[612, 109]],
     'no_border':  [[487, 114]],
     'tiff': [[450, 405], [214, 262], [615, 191]],
-    'jpeg': [[450, 405], [217, 247], [615, 191]]
+    'jpeg': [[450, 405], [217, 247], [615, 191]],
+    'start_button': [726, 515],
+    'cancel_button': [401, 362],
+
 };
 
 app.use(express.static('../public'));
 
 // WebSocket connection with clients
 wss.on('connection', (ws) => {
-    console.log('WebSocket Client connected');
-    ws.on('close', () => console.log('WebSocket Client disconnected'));
+    console.log('\x1b[37m%s\x1b[0m', 'WebSocket Client connected');
+    ws.on('close', () => console.log('\x1b[31m', 'WebSocket Client disconnected'));
 });
 
 const client = new net.Socket();
-client.on('error', (err) => console.error('Socket error:', err));
-server.listen(port, () => console.log(`Server listening at http://localhost:${port}`));
+client.on('error', (err) => console.error('\x1b[31m%s\x1b[0m', 'Socket error:', err));
+server.listen(port, () => console.log('\x1b[37m%s\x1b[0m', `Server listening at http://localhost:${port}`));
 
 client.on('data', (data) => {
     // Attempt to parse the data as JSON
     try {
         let jsonData = JSON.parse(data.toString());
-        //console.log('JSON Data received:', jsonData);
 
-        // Process the JSON data as settings
         serverSettings = { 
             film_type: jsonData.film_type, 
             look: settings.look, 
             border: jsonData.border, 
-            file_format: jsonData.file_format 
+            file_format: jsonData.file_format,
+            state: jsonData.state
         };
         
         if (firstLoad > 0) {
-            console.log(serverSettings);
+            if (settings.film_type !== serverSettings.film_type || settings.border !== serverSettings.border || settings.file_format !== serverSettings.file_format) {
+                console.log('\x1b[31m%s\x1b[0m', 'Client and server are not in sync');
+                compareAndProcessSettings();
+            } else {
+                console.log('\x1b[32m%s\x1b[0m', 'Client and server are in sync');
+                input();
+            }
         }
 
         firstLoad++
 
-        /*if (JSON.stringify(serverSettings) !== JSON.stringify(settings)) {
-            compareAndProcessSettings();
-        }*/
-        //if(serverSettings){input()} // Prompt for the next command
     } catch (e) {
         // If parsing fails, it's likely image data
         handleImageData(data);
@@ -93,7 +99,7 @@ client.on('data', (data) => {
 });
 
 
-function requestserverSettings() {
+function requestserverSettings(s) {
     client.write(JSON.stringify({ type: 'get_settings' }) + '<END_OF_JSON>');
 }
 
@@ -117,27 +123,27 @@ function processClicksForSetting(setting) {
 
 function compareAndProcessSettings() {
     if (!serverSettings) {
-        console.log('Current settings not available.');
+        console.log('\x1b[31m%s\x1b[0m', 'Current settings not available.');
         return;
     }
 
     // Compare film_type setting
     if (serverSettings.film_type !== settings.film_type) {
-        console.log('Film type out of sync');
+        console.log('\x1b[31m%s\x1b[0m', 'Film type out of sync');
         const filmTypeSetting = settings.film_type === 'colour' ? 'colour' : 'bw';
         processClicksForSetting(filmTypeSetting);
     }
 
     // Compare border setting
     if (serverSettings.border !== settings.border) {
-        console.log('Border out of sync');
+        console.log('\x1b[31m%s\x1b[0m', 'Border out of sync');
         const borderSetting = settings.border === 1 ? 'border' : 'no_border';
         processClicksForSetting(borderSetting);
     }
 
     // Compare file_format setting
     if (serverSettings.file_format !== settings.file_format) {
-        console.log('File format out of sync');
+        console.log('\x1b[31m%s\x1b[0m', 'File format out of sync');
         const fileFormatSetting = settings.file_format === 'TIFF' ? 'tiff' : 'jpeg';
         processClicksForSetting(fileFormatSetting);
     }
@@ -169,14 +175,14 @@ function processClickQueue() {
     sendClick(click.x, click.y); // Send the click
 
     // Set a timeout to process the next click after a delay
-    setTimeout(processClickQueue, 1000); // Delay of 0.5 seconds between clicks
+    setTimeout(processClickQueue, 2000); // Delay of 0.5 seconds between clicks
 }
 
 
 
 function sendClick(x, y) {
     const command = JSON.stringify({ type: 'click', x: x, y: y });
-    console.log(`Sending command: ${command}`);  // Debug log
+    //console.log(`Sending command: ${command}`);  // Debug log
     client.write(command + '<END_OF_JSON>');
 }
 
@@ -187,15 +193,7 @@ function handleCommand(command) {
             input();
             break;
         case 'sync':
-            //This case will ensure that the client and server are in sync with each other
-            let splicedSettings = Object.keys(settings).splice(1, 1);
-            if (settings.film_type !== serverSettings.film_type || settings.border !== serverSettings.border || settings.file_format !== serverSettings.file_format) {
-                console.log('Client and server are not in sync');
-                compareAndProcessSettings();
-            } else {
-                console.log('Client and server are in sync');
-                input();
-            }
+            requestserverSettings();
             break;
         case 'clientSettings':
             console.log(settings);
@@ -205,10 +203,16 @@ function handleCommand(command) {
             requestserverSettings();
             input();
             break;
+        case 'start':
+        case 'scan':
+            //Click start button on VM
+            addClick(clickLocations.start_button[0], clickLocations.start_button[1]);
+            //Check if film has been inserted
+            input();
+            break;
         case '?':
         case 'help':
             console.log('Commands: screenshot, click, settings, exit');
-            
             break;
         case 'screenshot':
             requestScreenshot();
@@ -242,7 +246,7 @@ function handleCommand(command) {
             input();
             break;
         default:
-            console.log('Invalid command');
+            console.log('\x1b[31m%s\x1b[0m', 'Invalid command');
             input();
             break;
     }
