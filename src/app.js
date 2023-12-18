@@ -19,6 +19,7 @@ let imageBuffer;
 let bufferOffset = 0;
 let jsonMessages = [];
 let serverSettings = null;
+let firstLoad = 0;
 
 let settings = {
     film_type: "colour",
@@ -74,12 +75,17 @@ client.on('data', (data) => {
             border: jsonData.border, 
             file_format: jsonData.file_format 
         };
-        console.log('Server settings:', serverSettings);
+        
+        if (firstLoad > 0) {
+            console.log(serverSettings);
+        }
+
+        firstLoad++
 
         /*if (JSON.stringify(serverSettings) !== JSON.stringify(settings)) {
             compareAndProcessSettings();
         }*/
-        if(serverSettings){input()} // Prompt for the next command
+        //if(serverSettings){input()} // Prompt for the next command
     } catch (e) {
         // If parsing fails, it's likely image data
         handleImageData(data);
@@ -148,22 +154,24 @@ function addClick(x, y) {
 }
 
 function processClickQueue() {
-    // Check if there are clicks to process
     if (clickQueue.length === 0) {
-        console.log('All clicks processed');
-        input(); // Ready to accept the next command
+        if (isProcessingClicks) {
+            console.log('All clicks processed');
+            isProcessingClicks = false;
+            input(); // Ready to accept the next command
+        }
         return;
     }
 
     // Processing clicks
     isProcessingClicks = true;
     const click = clickQueue.shift(); // Remove the first click from the queue
+    sendClick(click.x, click.y); // Send the click
 
     // Set a timeout to process the next click after a delay
-    setTimeout(() => {
-        sendClick(click.x, click.y); // Send the click
-    }, 1000); // Delay of 1 second between clicks
+    setTimeout(processClickQueue, 500); // Delay of 0.5 seconds between clicks
 }
+
 
 
 function sendClick(x, y) {
@@ -180,12 +188,15 @@ function handleCommand(command) {
             break;
         case 'sync':
             //This case will ensure that the client and server are in sync with each other
-            if (Object.keys(settings).splice(1, 1) !== serverSettings) {
+            let splicedSettings = Object.keys(settings).splice(1, 1);
+            if (settings.film_type !== serverSettings.film_type || settings.border !== serverSettings.border || settings.file_format !== serverSettings.file_format) {
                 console.log('Client and server are not in sync');
-                processClicksForSetting(settings);
+                compareAndProcessSettings();
             } else {
                 console.log('Client and server are in sync');
+                input();
             }
+            break;
         case 'clientSettings':
             console.log(settings);
             input();

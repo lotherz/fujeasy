@@ -58,8 +58,6 @@ def compare_with_reference(screenshot_data, reference_image_path, region):
 
     # Assuming a threshold for similarity to consider the setting as True
     threshold = 0.99
-    print("Similarity of" + reference_image_path + ": " + str(max_val))
-    print(max_val >= threshold)
     return max_val >= threshold
 
 
@@ -104,16 +102,19 @@ def start_server():
                 break
 
             buffer += data
-            try:
-                command = json.loads(buffer)
-                process_command(command, client_socket)
-                buffer = ""  # Clear the buffer after successful processing
-            except ValueError as e:
-                # If JSON is incomplete, continue receiving data
-                print("Received incomplete JSON data.")
-                continue
+            # Check if the delimiter is in the buffer
+            if "<END_OF_JSON>" in buffer:
+                # Split the buffer at the delimiter
+                complete_json, buffer = buffer.split("<END_OF_JSON>", 1)
+                try:
+                    command = json.loads(complete_json)
+                    process_command(command, client_socket)
+                except ValueError as e:
+                    print("Error processing JSON data: ", e)
+                    # You might want to handle this error differently
 
         client_socket.close()
         print("Connection closed.")
+
 
 start_server()
