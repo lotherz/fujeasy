@@ -57,7 +57,7 @@ def compare_with_reference(screenshot_data, reference_image_path, region):
     _, max_val, _, _ = cv2.minMaxLoc(similarity)
 
     # Assuming a threshold for similarity to consider the setting as True
-    threshold = 0.7
+    threshold = 0.9
     print("Similarity of" + reference_image_path + ": " + str(max_val))
     print(max_val >= threshold)
     return max_val >= threshold
