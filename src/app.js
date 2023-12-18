@@ -21,7 +21,7 @@ let jsonMessages = [];
 let serverSettings = null;
 
 let settings = {
-    film_type: "bw",
+    film_type: "colour",
     look: "standard",
     border: 0,
     file_format: "JPEG"
@@ -43,8 +43,8 @@ const rl = readline.createInterface({
 const clickLocations = {
     'colour': [[301, 173], [279, 279]],
     'bw': [[301, 173], [404, 289]],
-    'border': [[612, 109]], 
-    'no_border': [[487, 114]],
+    'border': [[612, 109]],
+    'no_border':  [[487, 114]],
     'tiff': [[450, 405], [214, 262], [615, 191]],
     'jpeg': [[450, 405], [217, 247], [615, 191]]
 };
@@ -62,52 +62,34 @@ client.on('error', (err) => console.error('Socket error:', err));
 server.listen(port, () => console.log(`Server listening at http://localhost:${port}`));
 
 client.on('data', (data) => {
+    // Attempt to parse the data as JSON
     try {
         let jsonData = JSON.parse(data.toString());
-        jsonMessages.push(jsonData);
-        console.log('JSON Data received:', jsonData);
-        serverSettings = { film_type: jsonData.film_type, look: settings.look, border: jsonData.border, file_format: jsonData.file_format };
+        //console.log('JSON Data received:', jsonData);
 
-        if (jsonData.type === 'settings') {
-            console.log('Server settings:', serverSettings);
+        // Process the JSON data as settings
+        serverSettings = { 
+            film_type: jsonData.film_type, 
+            look: settings.look, 
+            border: jsonData.border, 
+            file_format: jsonData.file_format 
+        };
+        console.log('Server settings:', serverSettings);
+
+        /*if (JSON.stringify(serverSettings) !== JSON.stringify(settings)) {
             compareAndProcessSettings();
-        }
-
-        input(); // Prompt for the next command
-        
+        }*/
+        if(serverSettings){input();} // Prompt for the next command
     } catch (e) {
-        // Accumulate image data if it's not JSON
-        if (isImageSize) {
-            // Parse the image size and prepare the buffer
-            imageSize = parseInt(data.toString());
-            if (isNaN(imageSize)) {
-                console.error('Invalid image size received:', data.toString());
-                return;
-            }
-            isImageSize = false;
-            imageBuffer = Buffer.alloc(imageSize);
-            bufferOffset = 0;
-        } else {
-            // Accumulate the image data into the buffer
-            data.copy(imageBuffer, bufferOffset);
-            bufferOffset += data.length;
-
-            if (bufferOffset >= imageSize) {
-                console.log('Received image data');
-                const imgBuffer = imageBuffer.slice(0, bufferOffset); // Slice the buffer to actual size
-                fs.writeFileSync('../public/screenshots/screenshot.png', imgBuffer);
-                isImageSize = true;
-
-                // Send the image data to all connected WebSocket clients
-                wss.clients.forEach((client) => {
-                    if (client.readyState === WebSocket.OPEN) {
-                        client.send(imgBuffer);
-                    }
-                });
-            }
-        }
+        // If parsing fails, it's likely image data
+        handleImageData(data);
     }
 });
+
+
+function requestserverSettings() {
+    client.write(JSON.stringify({ type: 'get_settings' }) + '\n');
+}
 
 client.connect(8080, '192.168.1.20', () => {
     console.log('Connected to VM');
@@ -119,10 +101,6 @@ client.on('close', () => {
     isProcessingClicks = false;
     console.log('Connection closed');
 });
-
-function requestserverSettings() {
-    client.write(JSON.stringify({ type: 'get_settings' }) + '\n');
-}
 
 function processClicksForSetting(setting) {
     const clicks = clickLocations[setting];
@@ -137,23 +115,30 @@ function compareAndProcessSettings() {
         return;
     }
 
+    // Compare film_type setting
     if (serverSettings.film_type !== settings.film_type) {
+        console.log('Film type out of sync');
         const filmTypeSetting = settings.film_type === 'colour' ? 'colour' : 'bw';
         processClicksForSetting(filmTypeSetting);
     }
 
+    // Compare border setting
     if (serverSettings.border !== settings.border) {
+        console.log('Border out of sync');
         const borderSetting = settings.border === 1 ? 'border' : 'no_border';
         processClicksForSetting(borderSetting);
     }
 
+    // Compare file_format setting
     if (serverSettings.file_format !== settings.file_format) {
+        console.log('File format out of sync');
         const fileFormatSetting = settings.file_format === 'TIFF' ? 'tiff' : 'jpeg';
         processClicksForSetting(fileFormatSetting);
     }
 
     processClickQueue();
 }
+
 
 function addClick(x, y) {
     clickQueue.push({ x, y });
@@ -163,16 +148,23 @@ function addClick(x, y) {
 }
 
 function processClickQueue() {
+    // Check if there are clicks to process
     if (clickQueue.length === 0) {
-        //client.end(); // Close the connection when all clicks are processed
         console.log('All clicks processed');
+        input(); // Ready to accept the next command
         return;
     }
 
+    // Processing clicks
     isProcessingClicks = true;
-    let click = clickQueue.shift();
-    sendClick(click.x, click.y);
+    const click = clickQueue.shift(); // Remove the first click from the queue
+
+    // Set a timeout to process the next click after a delay
+    setTimeout(() => {
+        sendClick(click.x, click.y); // Send the click
+    }, 1000); // Delay of 1 second between clicks
 }
+
 
 function sendClick(x, y) {
     const command = JSON.stringify({ type: 'click', x: x, y: y });
@@ -182,24 +174,24 @@ function sendClick(x, y) {
 
 function handleCommand(command) {
     switch (command) {
+        case 'clickqueue':
+            console.log(clickQueue)
+            input();
+            break;
         case 'sync':
             //This case will ensure that the client and server are in sync with each other
-            if (settings !== serverSettings) {
+            if (Object.keys(settings).splice(1, 1) !== serverSettings) {
                 console.log('Client and server are not in sync');
-                compareAndProcessSettings();
+                processClicksForSetting(settings);
             } else {
                 console.log('Client and server are in sync');
             }
-        case '':
-            requestserverSettings();
-            input(); // Prompt for next command
-            break
         case 'clientSettings':
             console.log(settings);
             input();
             break;
         case 'serverSettings':
-            console.log(serverSettings);
+            requestserverSettings();
             input();
             break;
         case '?':
@@ -215,7 +207,7 @@ function handleCommand(command) {
             rl.question('Enter x: ', (x) => {
                 rl.question('Enter y: ', (y) => {
                     addClick(parseInt(x, 10), parseInt(y, 10));
-                    processClickQueue();
+                    compareAndProcessSettings();
                     input();
                 });
             });
@@ -225,7 +217,6 @@ function handleCommand(command) {
                 rl.question('Enter border (0/1): ', (border) => {
                     rl.question('Enter file format (JPEG/TIFF): ', (file_format) => {
                         settings = { film_type: film_type, look: settings.look, border: parseInt(border), file_format: file_format };
-                        compareAndProcessSettings();
                         input(); // Prompt for next command
                     });
                 });
@@ -247,6 +238,6 @@ function handleCommand(command) {
 }
 
 rl.on('close', () => {
-    console.log('Exiting program');
+    console.log('User Exit');
     process.exit(0);
 });
