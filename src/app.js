@@ -79,7 +79,7 @@ client.on('data', (data) => {
         /*if (JSON.stringify(serverSettings) !== JSON.stringify(settings)) {
             compareAndProcessSettings();
         }*/
-        if(serverSettings){input();} // Prompt for the next command
+        if(serverSettings){input()} // Prompt for the next command
     } catch (e) {
         // If parsing fails, it's likely image data
         handleImageData(data);
