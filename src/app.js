@@ -94,7 +94,7 @@ client.on('data', (data) => {
 
 
 function requestserverSettings() {
-    client.write(JSON.stringify({ type: 'get_settings' }) + '\n');
+    client.write(JSON.stringify({ type: 'get_settings' }) + '<END_OF_JSON>');
 }
 
 client.connect(8080, '192.168.1.20', () => {
@@ -169,7 +169,7 @@ function processClickQueue() {
     sendClick(click.x, click.y); // Send the click
 
     // Set a timeout to process the next click after a delay
-    setTimeout(processClickQueue, 500); // Delay of 0.5 seconds between clicks
+    setTimeout(processClickQueue, 1000); // Delay of 0.5 seconds between clicks
 }
 
 
@@ -177,7 +177,7 @@ function processClickQueue() {
 function sendClick(x, y) {
     const command = JSON.stringify({ type: 'click', x: x, y: y });
     console.log(`Sending command: ${command}`);  // Debug log
-    client.write(command + '\n');
+    client.write(command + '<END_OF_JSON>');
 }
 
 function handleCommand(command) {
