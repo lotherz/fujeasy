@@ -72,24 +72,26 @@ client.on('data', (data) => {
     try {
         let jsonData = JSON.parse(data.toString());
 
-        serverSettings = { 
-            film_type: jsonData.film_type, 
-            look: settings.look, 
-            border: jsonData.border, 
-            file_format: jsonData.file_format,
-            state: jsonData.state
-        };
-        
-        if (firstLoad > 0) {
-            if (settings.film_type !== serverSettings.film_type || settings.border !== serverSettings.border || settings.file_format !== serverSettings.file_format) {
-                console.log('\x1b[31m%s\x1b[0m', 'Client and server are not in sync');
-                compareAndProcessSettings();
-            } else {
-                console.log('\x1b[32m%s\x1b[0m', 'Client and server are in sync');
-                input();
+        if (serverSettings) {
+            serverSettings = { 
+                film_type: jsonData.film_type, 
+                look: settings.look, 
+                border: jsonData.border, 
+                file_format: jsonData.file_format,
+                state: jsonData.state
+            };
+            
+            if (firstLoad > 0) {
+                if (settings.film_type !== serverSettings.film_type || settings.border !== serverSettings.border || settings.file_format !== serverSettings.file_format) {
+                    console.log('\x1b[31m%s\x1b[0m', 'Client and server are not in sync');
+                    compareAndProcessSettings();
+                } else {
+                    console.log('\x1b[32m%s\x1b[0m', 'Client and server are in sync');
+                    input();
+                }
             }
         }
-
+        
         firstLoad++
 
     } catch (e) {
@@ -97,6 +99,41 @@ client.on('data', (data) => {
         handleImageData(data);
     }
 });
+
+function handleImageData(data) {
+    // Check if we are still expecting the image size
+    if (isImageSize) {
+        const sizeMatch = data.toString().match(/^\d+/);
+        if (sizeMatch) {
+            imageSize = parseInt(sizeMatch[0], 10);
+            if (!isNaN(imageSize)) {
+                imageBuffer = Buffer.alloc(imageSize);
+                bufferOffset = 0;
+                isImageSize = false;
+                data = data.slice(sizeMatch[0].length); // Remove the size part from data
+            } else {
+                console.error('Invalid image size received:', sizeMatch[0]);
+                return;
+            }
+        }
+    }
+
+    // If imageBuffer is initialized, handle image data
+    if (imageBuffer && data.length > 0) {
+        const chunkSize = Math.min(imageSize - bufferOffset, data.length);
+        data.copy(imageBuffer, bufferOffset, 0, chunkSize);
+        bufferOffset += chunkSize;
+
+        if (bufferOffset >= imageSize) {
+            console.log('Received complete image data');
+            fs.writeFileSync('../public/screenshots/screenshot.png', imageBuffer);
+            isImageSize = true;
+            imageSize = 0;
+            bufferOffset = 0;
+            imageBuffer = null;
+        }
+    }
+}
 
 
 function requestserverSettings(s) {
@@ -186,6 +223,12 @@ function sendClick(x, y) {
     client.write(command + '<END_OF_JSON>');
 }
 
+function requestScreenshot() {
+    const command = JSON.stringify({ type: 'screenshot' });
+    console.log(`Requesting screenshot...`);  // Debug log
+    client.write(command + '<END_OF_JSON>');
+}
+
 function handleCommand(command) {
     switch (command) {
         case 'clickqueue':
@@ -208,7 +251,8 @@ function handleCommand(command) {
             //Click start button on VM
             addClick(clickLocations.start_button[0], clickLocations.start_button[1]);
             //Check if film has been inserted
-            input();
+            isScanning = true;
+            scan();
             break;
         case '?':
         case 'help':

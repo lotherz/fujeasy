@@ -70,6 +70,7 @@ def take_screenshot():
 def send_screenshot(client_socket):
     img_data = take_screenshot()
     size = len(img_data)
+    print('Screenshot Taken / Size: ' + str(size) + ' bytes')
     client_socket.sendall(str(size).encode('utf-8') + b'\n')
     client_socket.sendall(img_data)
 
@@ -80,6 +81,7 @@ def process_command(command, client_socket):
         print("Clicking at: " + str(command['x']) + ", " + str(command['y']))
     elif command['type'] == 'screenshot':
         send_screenshot(client_socket)
+        print("Screenshot Sent")
     elif command['type'] == 'get_settings':
         settings = derive_settings()
         print(settings)
