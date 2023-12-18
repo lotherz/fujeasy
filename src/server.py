@@ -16,8 +16,8 @@ reference_images = {
 def derive_settings():
     # Define regions for each setting
     regions = {
-        "film_type":    (235, 141, 127, 79),    # Example coordinates for film_type
-        "border":       (453, 100, 64, 21),     # Example coordinates for border
+        "film_type":    (240, 146, 117, 69),    # Example coordinates for film_type
+        "border":       (461, 105, 47, 11),     # Example coordinates for border
         "file_format":  (387, 376, 115, 67)     # Example coordinates for file_format
         #               (x-coordinate, y-coordinate, width, height)
     }
