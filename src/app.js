@@ -101,39 +101,29 @@ client.on('data', (data) => {
 });
 
 function handleImageData(data) {
-    // Check if we are still expecting the image size
-    if (isImageSize) {
-        const sizeMatch = data.toString().match(/^\d+/);
-        if (sizeMatch) {
-            imageSize = parseInt(sizeMatch[0], 10);
-            if (!isNaN(imageSize)) {
-                imageBuffer = Buffer.alloc(imageSize);
-                bufferOffset = 0;
-                isImageSize = false;
-                data = data.slice(sizeMatch[0].length); // Remove the size part from data
-            } else {
-                console.error('Invalid image size received:', sizeMatch[0]);
-                return;
-            }
-        }
+    console.log('Received data...');
+
+    // Append new data to the buffer
+    if (imageBuffer) {
+        imageBuffer = Buffer.concat([imageBuffer, data]);
+    } else {
+        imageBuffer = Buffer.from(data);
     }
 
-    // If imageBuffer is initialized, handle image data
-    if (imageBuffer && data.length > 0) {
-        const chunkSize = Math.min(imageSize - bufferOffset, data.length);
-        data.copy(imageBuffer, bufferOffset, 0, chunkSize);
-        bufferOffset += chunkSize;
+    // Check if we have received the complete image
+    if (imageBuffer.length >= imageSize) {
+        console.log('Received complete image data');
 
-        if (bufferOffset >= imageSize) {
-            console.log('Received complete image data');
-            fs.writeFileSync('../public/screenshots/screenshot.png', imageBuffer);
-            isImageSize = true;
-            imageSize = 0;
-            bufferOffset = 0;
-            imageBuffer = null;
-        }
+        // Write the image data to a file
+        fs.writeFileSync('../public/screenshots/screenshot.png', imageBuffer);
+
+        // Reset for the next image
+        isImageSize = true;
+        imageSize = 0;
+        imageBuffer = null;
     }
 }
+
 
 
 function requestserverSettings(s) {
@@ -187,7 +177,6 @@ function compareAndProcessSettings() {
 
     processClickQueue();
 }
-
 
 function addClick(x, y) {
     clickQueue.push({ x, y });
@@ -257,6 +246,7 @@ function handleCommand(command) {
         case '?':
         case 'help':
             console.log('Commands: screenshot, click, settings, exit');
+            input();
             break;
         case 'screenshot':
             requestScreenshot();

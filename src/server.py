@@ -71,8 +71,10 @@ def send_screenshot(client_socket):
     img_data = take_screenshot()
     size = len(img_data)
     print('Screenshot Taken / Size: ' + str(size) + ' bytes')
-    client_socket.sendall(str(size).encode('utf-8') + b'\n')
+    client_socket.sendall(str(size).encode('utf-8') + b'\n')  # Using newline as a delimiter
     client_socket.sendall(img_data)
+    print("Screenshot Sent")
+
 
 def process_command(command, client_socket):
     print("Received command: " + str(command))
@@ -84,7 +86,6 @@ def process_command(command, client_socket):
     elif command['type'] == 'screenshot':
         
         send_screenshot(client_socket)
-        print("Screenshot Sent")
         
     elif command['type'] == 'get_settings':
         
