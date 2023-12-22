@@ -18,7 +18,7 @@ let imageBuffer;
 let bufferOffset = 0;
 let jsonMessages = [];
 let serverSettings = null;
-let firstLoad = 0;
+let firstLoad = false;
 let isScanning = false;
 let expectingSize = true;
 let currentState = 'AWAITING_SIZE';
@@ -71,10 +71,31 @@ client.on('error', (err) => console.error('\x1b[31m%s\x1b[0m', 'Socket error:', 
 server.listen(port, () => console.log('\x1b[37m%s\x1b[0m', `Server listening at http://localhost:${port}`));
 
 client.on('data', (data) => {
-    
-    // Attempt to parse the data as JSON
+    accumulatedData = Buffer.concat([accumulatedData, data]);
+
+    // Check if the accumulated data contains a complete header
+    const headerEndIndex = accumulatedData.indexOf('\n');
+    if (headerEndIndex !== -1) {
+        const header = accumulatedData.slice(0, headerEndIndex).toString();
+        accumulatedData = accumulatedData.slice(headerEndIndex + 1);
+
+        if (header === 'JSON') {
+            // Handle JSON data
+            handleJsonData();
+        } else if (header === 'IMAGE') {
+            // Handle image data
+            handleImageData();
+        } else {
+            console.error('Unknown data type received:', header);
+        }
+    }
+});
+
+function handleJsonData() {
+    // Try to parse JSON until a valid JSON is formed
+    // Note: You might need to accumulate data until you have a complete JSON object
     try {
-        let jsonData = JSON.parse(data.toString());
+        let jsonData = JSON.parse(accumulatedData.toString());
 
         if (serverSettings) {
             serverSettings = { 
@@ -84,25 +105,27 @@ client.on('data', (data) => {
                 file_format: jsonData.file_format,
                 state: jsonData.state
             };
-            
-            if (firstLoad > 0) {
-                if (settings.film_type !== serverSettings.film_type || settings.border !== serverSettings.border || settings.file_format !== serverSettings.file_format) {
-                    console.log('\x1b[31m%s\x1b[0m', 'Client and server are not in sync');
-                    compareAndProcessSettings();
-                } else {
-                    console.log('\x1b[32m%s\x1b[0m', 'Client and server are in sync');
-                    input();
-                }
+        }
+
+        if (firstLoad === false) {
+            console.log('Received data: ', jsonData);
+
+            if (settings.film_type !== serverSettings.film_type || settings.border !== serverSettings.border || settings.file_format !== serverSettings.file_format) {
+                console.log('\x1b[31m%s\x1b[0m', 'Client and server are not in sync');
+                compareAndProcessSettings();
+            } else {
+                console.log('\x1b[32m%s\x1b[0m', 'Client and server are in sync');
+                input();
             }
         }
         
-        firstLoad++
-
+        firstLoad = true;
+        accumulatedData = Buffer.alloc(0); // Clear the buffer after processing
     } catch (e) {
-        // If parsing fails, it's likely image data
-        handleImageData(data);
+        console.log('Awaiting more data for complete JSON...');
     }
-});
+}
+
 
 function handleImageData(data) {
     console.log('Received data chunk: ', data.length + ' bytes');
@@ -148,13 +171,6 @@ function handleImageData(data) {
             }
         }
     }
-}
-
-
-function resetImageHandling() {
-    isImageSize = true;
-    imageSize = 0;
-    imageBuffer = null;
 }
 
 function requestserverSettings(s) {
