@@ -101,23 +101,18 @@ client.on('data', (data) => {
     }
 });
 
-
 function handleJsonData() {
     const jsonEndIndex = accumulatedData.indexOf('<END_OF_JSON>');
+    
     if (jsonEndIndex === -1) {
         console.log("Awaiting more data for complete JSON...");
         return;
     }
 
-    const serverSettings = accumulatedData.slice(0, jsonEndIndex).toString();
-
+    const jsonData = accumulatedData.slice(0, jsonEndIndex).toString();
     try {
-        // Find end of JSON delimiter
-        const jsonEndIndex = accumulatedData.indexOf('<END_OF_JSON>');
-        if (jsonEndIndex === -1) {
-            console.log("Awaiting more data for complete JSON...");
-            return;
-        }
+        let parsedData = JSON.parse(jsonData);
+        console.log("Parsed JSON data: ", parsedData);
 
         if (serverSettings) {
             serverSettings = { 
@@ -145,18 +140,9 @@ function handleJsonData() {
         
         firstLoad = true;
 
-        // Parse and handle JSON data
-        const jsonData = accumulatedData.slice(0, jsonEndIndex).toString();
-        let parsedData = JSON.parse(jsonData);
-        console.log("Parsed JSON data: ", parsedData);
-
-        // Update server settings or perform actions based on JSON data
-
-        // Clear processed JSON data from buffer
-        accumulatedData = Buffer.alloc(0);
+        accumulatedData = accumulatedData.slice(jsonEndIndex + '<END_OF_JSON>'.length);
     } catch (e) {
         console.error('Error parsing JSON:', e);
-        // Implement error handling or re-sync mechanism
     }
 }
 
