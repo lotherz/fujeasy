@@ -14,7 +14,6 @@ const port = 3000;
 let clickQueue = [];
 let isProcessingClicks = false;
 let isImageSize = true;
-let imageSize = 0;
 let imageBuffer;
 let bufferOffset = 0;
 let jsonMessages = [];
@@ -22,6 +21,9 @@ let serverSettings = null;
 let firstLoad = 0;
 let isScanning = false;
 let expectingSize = true;
+let currentState = 'AWAITING_SIZE';
+let accumulatedData = Buffer.alloc(0);
+let imageSize = 0;  
 
 let settings = {
     film_type: "colour",
@@ -69,6 +71,7 @@ client.on('error', (err) => console.error('\x1b[31m%s\x1b[0m', 'Socket error:', 
 server.listen(port, () => console.log('\x1b[37m%s\x1b[0m', `Server listening at http://localhost:${port}`));
 
 client.on('data', (data) => {
+    
     // Attempt to parse the data as JSON
     try {
         let jsonData = JSON.parse(data.toString());
@@ -102,61 +105,51 @@ client.on('data', (data) => {
 });
 
 function handleImageData(data) {
-    if (expectingSize) {
-        // Extract the size from the incoming data
-        const result = /SIZE:(\d+)\nENDSIZE\n/.exec(data.toString());
-        if (result) {
-            imageSize = parseInt(result[1]);
-            if (isNaN(imageSize)) {
-                console.error('Invalid image size received');
-                return;
+    console.log('Received data chunk: ', data.length + ' bytes');
+    accumulatedData = Buffer.concat([accumulatedData, data]);
+
+    while (true) {
+        if (currentState === 'AWAITING_SIZE') {
+            const sizeEndIndex = accumulatedData.indexOf('\nENDSIZE\n');
+            if (sizeEndIndex !== -1) {
+                const sizeInfo = accumulatedData.slice(0, sizeEndIndex).toString();
+                const sizeMatch = sizeInfo.match(/SIZE:(\d+)/);
+                if (sizeMatch) {
+                    imageSize = parseInt(sizeMatch[1], 10);
+                    console.log('Expected image size:', imageSize);
+                    currentState = 'AWAITING_IMAGE';
+                    accumulatedData = accumulatedData.slice(sizeEndIndex + '\nENDSIZE\n'.length);
+                    console.log('Size info processed, start downloading image...');
+                } else {
+                    console.error('Invalid image size received:', sizeInfo);
+                    currentState = 'AWAITING_SIZE';
+                    accumulatedData = Buffer.alloc(0);
+                    break;
+                }
+            } else {
+                console.log('Awaiting more data for size info...');
+                break;
             }
-            expectingSize = false;
-            data = data.slice(result[0].length); // Remove the size info from the data
-        } else {
-            console.error('Size information not properly received');
-            return;
-        }
-    }
-    // Check if we are expecting image size
-    if (isImageSize) {
-        const sizeData = data.toString().split('\n')[0]; // Assuming the first line is the size
-        imageSize = parseInt(sizeData);
-        if (isNaN(imageSize)) {
-            console.error('Invalid image size received:', sizeData);
-            return;
-        }
-        isImageSize = false;
-        return;
-    }
-
-    // Initialize imageBuffer if it's the first chunk
-    if (!imageBuffer) {
-        imageBuffer = Buffer.from(data);
-    } else {
-        imageBuffer = Buffer.concat([imageBuffer, data]);
-    }
-
-    //console.log('Current image buffer size:', imageBuffer.length);
-
-    // Check if we have received the complete image
-    if (imageBuffer.length >= imageSize) {
-
-        console.log('Expected image size:', imageSize, 'Received image size:', imageBuffer.length);
-
-        if (imageBuffer.length > imageSize) {
-            console.warn('Warning: Received more data than expected. Truncating extra data.');
-            imageBuffer = imageBuffer.slice(0, imageSize);
         }
 
-        // Write the image data to a file
-        fs.writeFileSync('../public/screenshots/screenshot.png', imageBuffer);
-        console.log('Image written to file.');
+        if (currentState === 'AWAITING_IMAGE') {
+            if (accumulatedData.length >= imageSize) {
+                console.log('Full image data received');
+                const imageData = accumulatedData.slice(0, imageSize);
+                
+                fs.writeFileSync('../public/screenshots/screenshot.png', imageData);
+                console.log('Image written to file.');
 
-        // Reset for the next image
-        resetImageHandling();
+                currentState = 'AWAITING_SIZE';
+                accumulatedData = accumulatedData.slice(imageSize);
+                console.log('Image processed, awaiting next screenshot size');
+            } else {
+                break;
+            }
+        }
     }
 }
+
 
 function resetImageHandling() {
     isImageSize = true;
