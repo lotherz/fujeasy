@@ -88,7 +88,8 @@ client.on('data', (data) => {
         accumulatedData = accumulatedData.slice(jsonEndIndex + '<END_OF_JSON>'.length);
     } else {
         // Process other data (like image data)
-        handleImageData();
+        //handleImageData();
+        console.log("error");
     }
 
 });
