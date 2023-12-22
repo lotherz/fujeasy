@@ -80,7 +80,7 @@ def send_screenshot(client_socket):
     client_socket.sendall(size_info.encode('utf-8'))
 
     # Send the actual image data
-    client_socket.sendall(img_data)
+    client_socket.sendall(img_data + b'<END_OF_IMAGE>')
 
     print("Screenshot Sent")
 

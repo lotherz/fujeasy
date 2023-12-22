@@ -72,59 +72,77 @@ server.listen(port, () => console.log('\x1b[37m%s\x1b[0m', `Server listening at 
 
 client.on('data', (data) => {
     accumulatedData = Buffer.concat([accumulatedData, data]);
+    console.log(`Received new data chunk of length: ${data.length}`);
 
-    console.log(accumulatedData);
+    while (accumulatedData.length > 0) {
+        // Check for the end of the header (\n)
+        const headerEndIndex = accumulatedData.indexOf('\n');
+        if (headerEndIndex === -1) {
+            console.log("Waiting for complete header...");
+            break; // Wait for more data to complete the header
+        }
 
-    // Check for JSON delimiter
-    const jsonEndIndex = accumulatedData.indexOf('<END_OF_JSON>');
-    if (jsonEndIndex !== -1) {
-        // Extract JSON data
-        const jsonData = accumulatedData.slice(0, jsonEndIndex).toString();
+        // Extract the header
+        const header = accumulatedData.slice(0, headerEndIndex).toString();
+        console.log(`Header received: ${header}`);
+        // Remove the header (and the newline) from the buffer
+        accumulatedData = accumulatedData.slice(headerEndIndex + 1);
 
-        // Handle JSON data
-        handleJsonData(jsonData);
-
-        // Remove processed JSON data from buffer
-        accumulatedData = accumulatedData.slice(jsonEndIndex + '<END_OF_JSON>'.length);
-    } else {
-        // Process other data (like image data)
-        //handleImageData();
-        console.log("error");
+        if (header === 'JSON') {
+            // Handle JSON data
+            handleJsonData(accumulatedData);
+        } else if (header === 'IMAGE') {
+            // Handle image data
+            handleImageData(accumulatedData);
+        } else {
+            console.error('Unknown header type received:', header);
+            break;
+        }
     }
-
 });
 
 function handleJsonData(jsonData) {
-    try {
-        let parsedData = JSON.parse(jsonData);
-        if (serverSettings) {
-            serverSettings = { 
-                film_type: jsonData.film_type, 
-                look: settings.look, 
-                border: jsonData.border, 
-                file_format: jsonData.file_format,
-                state: jsonData.state
-            };
-        }
+    const jsonEndIndex = accumulatedData.indexOf('<END_OF_JSON>');
+    if (jsonEndIndex !== -1) {
+        const jsonData = accumulatedData.slice(0, jsonEndIndex).toString();
+        console.log(`Extracted JSON data: ${jsonData}`);
+        try {
 
-        if (firstLoad === false) {
-            console.log('Received data: ', jsonData);
-
-            if (settings.film_type !== serverSettings.film_type || settings.border !== serverSettings.border || settings.file_format !== serverSettings.file_format) {
-                console.log('\x1b[31m%s\x1b[0m', 'Client and server are not in sync');
-                compareAndProcessSettings();
-            } else {
-                console.log('\x1b[32m%s\x1b[0m', 'Client and server are in sync');
-                input();
+            if (serverSettings) {
+                serverSettings = { 
+                    film_type: jsonData.film_type, 
+                    look: settings.look, 
+                    border: jsonData.border, 
+                    file_format: jsonData.file_format,
+                    state: jsonData.state
+                };
             }
+    
+            if (firstLoad === false) {
+                console.log('Received initial data from server:', jsonData);
+    
+                if (settings.film_type !== serverSettings.film_type || 
+                    settings.border !== serverSettings.border || 
+                    settings.file_format !== serverSettings.file_format) {
+                    console.log('\x1b[31m%s\x1b[0m', 'Client and server settings are not in sync');
+                    compareAndProcessSettings();
+                } else {
+                    console.log('\x1b[32m%s\x1b[0m', 'Client and server settings are in sync');
+                    input();
+                }
+            }
+            
+            firstLoad = true;
+            accumulatedData = Buffer.alloc(0);
+        } catch (e) {
+            console.error('Error parsing JSON:', e);
         }
-        
-        firstLoad = true;
-        accumulatedData = Buffer.alloc(0); // Clear the buffer after processing
-    } catch (e) {
-        console.error('Error parsing JSON:', e);
+
+        accumulatedData = accumulatedData.slice(jsonEndIndex + '<END_OF_JSON>'.length);
+    } else {
+        console.log("Complete JSON data not yet received.");
     }
-}
+ }
 
 function handleImageData(data) {
     console.log('Received image data: ', accumulatedData.length + ' bytes');
@@ -165,11 +183,14 @@ function handleImageData(data) {
                 currentState = 'AWAITING_SIZE';
                 accumulatedData = accumulatedData.slice(imageSize);
                 console.log('Image processed, awaiting next screenshot size');
+                
             } else {
                 break;
             }
         }
     }
+    accumulatedData = Buffer.alloc(0);
+
 }
 
 function requestserverSettings(s) {
