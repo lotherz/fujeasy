@@ -101,7 +101,18 @@ client.on('data', (data) => {
 });
 
 function handleImageData(data) {
-    console.log('Received data chunk of size:', data.length);
+
+    // Check if we are expecting image size
+    if (isImageSize) {
+        const sizeData = data.toString().split('\n')[0]; // Assuming the first line is the size
+        imageSize = parseInt(sizeData);
+        if (isNaN(imageSize)) {
+            console.error('Invalid image size received:', sizeData);
+            return;
+        }
+        isImageSize = false;
+        return;
+    }
 
     // Initialize imageBuffer if it's the first chunk
     if (!imageBuffer) {
