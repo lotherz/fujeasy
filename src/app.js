@@ -101,30 +101,41 @@ client.on('data', (data) => {
 });
 
 function handleImageData(data) {
-    console.log('Received data...');
+    console.log('Received data chunk of size:', data.length);
 
-    // Append new data to the buffer
-    if (imageBuffer) {
-        imageBuffer = Buffer.concat([imageBuffer, data]);
-    } else {
+    // Initialize imageBuffer if it's the first chunk
+    if (!imageBuffer) {
         imageBuffer = Buffer.from(data);
+    } else {
+        imageBuffer = Buffer.concat([imageBuffer, data]);
     }
+
+    //console.log('Current image buffer size:', imageBuffer.length);
 
     // Check if we have received the complete image
     if (imageBuffer.length >= imageSize) {
-        console.log('Received complete image data');
+
+        console.log('Expected image size:', imageSize, 'Received image size:', imageBuffer.length);
+
+        if (imageBuffer.length > imageSize) {
+            console.warn('Warning: Received more data than expected. Truncating extra data.');
+            imageBuffer = imageBuffer.slice(0, imageSize);
+        }
 
         // Write the image data to a file
         fs.writeFileSync('../public/screenshots/screenshot.png', imageBuffer);
+        console.log('Image written to file.');
 
         // Reset for the next image
-        isImageSize = true;
-        imageSize = 0;
-        imageBuffer = null;
+        resetImageHandling();
     }
 }
 
-
+function resetImageHandling() {
+    isImageSize = true;
+    imageSize = 0;
+    imageBuffer = null;
+}
 
 function requestserverSettings(s) {
     client.write(JSON.stringify({ type: 'get_settings' }) + '<END_OF_JSON>');
@@ -203,8 +214,6 @@ function processClickQueue() {
     // Set a timeout to process the next click after a delay
     setTimeout(processClickQueue, 2000); // Delay of 0.5 seconds between clicks
 }
-
-
 
 function sendClick(x, y) {
     const command = JSON.stringify({ type: 'click', x: x, y: y });
