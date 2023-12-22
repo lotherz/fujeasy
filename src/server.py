@@ -73,10 +73,12 @@ def send_screenshot(client_socket):
     print('Screenshot Taken / Size: ' + str(size) + ' bytes')
 
     header = "IMAGE\n".encode('utf-8')
+    
     client_socket.sendall(header)  # Send image header
 
     # Prepare and send image size information with a unique delimiter
     size_info = "SIZE:{}\nENDSIZE\n".format(size)
+    
     client_socket.sendall(size_info.encode('utf-8'))
 
     # Send the actual image data
@@ -84,7 +86,14 @@ def send_screenshot(client_socket):
 
     print("Screenshot Sent")
 
+def send_settings(client_socket):
+    settings = derive_settings()
+    print(settings)
+    settings_json = json.dumps(settings)
+    
+    client_socket.sendall("JSON\n".encode('utf-8') + b'/n')  # Send JSON header
 
+    client_socket.sendall(settings_json.encode('utf-8') + b'<END_OF_JSON>')
 
 def process_command(command, client_socket):
     print("Received command: " + str(command))
@@ -96,15 +105,7 @@ def process_command(command, client_socket):
         send_screenshot(client_socket)
 
     elif command['type'] == 'get_settings':
-        settings = derive_settings()
-        print(settings)
-        settings_json = json.dumps(settings)
-
-        header = "JSON\n".encode('utf-8')
-        client_socket.sendall(header)  # Send JSON header
-
-        client_socket.sendall(settings_json.encode('utf-8') + b'<END_OF_JSON>')
-
+        send_settings(client_socket)
 
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

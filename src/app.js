@@ -72,77 +72,96 @@ server.listen(port, () => console.log('\x1b[37m%s\x1b[0m', `Server listening at 
 
 client.on('data', (data) => {
     accumulatedData = Buffer.concat([accumulatedData, data]);
-    console.log(`Received new data chunk of length: ${data.length}`);
 
-    while (accumulatedData.length > 0) {
-        // Check for the end of the header (\n)
+    while (accumulatedData.length) {
+        // Attempt to read the header from the accumulated data
         const headerEndIndex = accumulatedData.indexOf('\n');
         if (headerEndIndex === -1) {
-            console.log("Waiting for complete header...");
-            break; // Wait for more data to complete the header
+            // No complete header found in the data yet, wait for more data
+            break;
         }
 
-        // Extract the header
+        // Extract and process the header
         const header = accumulatedData.slice(0, headerEndIndex).toString();
         console.log(`Header received: ${header}`);
-        // Remove the header (and the newline) from the buffer
+
+        // Remove the processed header from the accumulated data
         accumulatedData = accumulatedData.slice(headerEndIndex + 1);
 
         if (header === 'JSON') {
-            // Handle JSON data
-            handleJsonData(accumulatedData);
+            // Process JSON Data
+            handleJsonData();
         } else if (header === 'IMAGE') {
-            // Handle image data
-            handleImageData(accumulatedData);
+            // Process Image Data
+            handleImageData();
         } else {
-            console.error('Unknown header type received:', header);
-            break;
+            console.log(`Unknown header type: ${header}`);
+            // Implement additional header types or error handling here if needed
         }
     }
 });
 
-function handleJsonData(jsonData) {
-    const jsonEndIndex = accumulatedData.indexOf('<END_OF_JSON>');
-    if (jsonEndIndex !== -1) {
-        const jsonData = accumulatedData.slice(0, jsonEndIndex).toString();
-        console.log(`Extracted JSON data: ${jsonData}`);
-        try {
 
-            if (serverSettings) {
-                serverSettings = { 
-                    film_type: jsonData.film_type, 
-                    look: settings.look, 
-                    border: jsonData.border, 
-                    file_format: jsonData.file_format,
-                    state: jsonData.state
-                };
-            }
-    
-            if (firstLoad === false) {
-                console.log('Received initial data from server:', jsonData);
-    
-                if (settings.film_type !== serverSettings.film_type || 
-                    settings.border !== serverSettings.border || 
-                    settings.file_format !== serverSettings.file_format) {
-                    console.log('\x1b[31m%s\x1b[0m', 'Client and server settings are not in sync');
-                    compareAndProcessSettings();
-                } else {
-                    console.log('\x1b[32m%s\x1b[0m', 'Client and server settings are in sync');
-                    input();
-                }
-            }
-            
-            firstLoad = true;
-            accumulatedData = Buffer.alloc(0);
-        } catch (e) {
-            console.error('Error parsing JSON:', e);
+function handleJsonData() {
+    const jsonEndIndex = accumulatedData.indexOf('<END_OF_JSON>');
+    if (jsonEndIndex === -1) {
+        console.log("Awaiting more data for complete JSON...");
+        return;
+    }
+
+    const serverSettings = accumulatedData.slice(0, jsonEndIndex).toString();
+
+    try {
+        // Find end of JSON delimiter
+        const jsonEndIndex = accumulatedData.indexOf('<END_OF_JSON>');
+        if (jsonEndIndex === -1) {
+            console.log("Awaiting more data for complete JSON...");
+            return;
         }
 
+        if (serverSettings) {
+            serverSettings = { 
+                film_type: jsonData.film_type, 
+                look: settings.look, 
+                border: jsonData.border, 
+                file_format: jsonData.file_format,
+                state: jsonData.state
+            };
+        }
+
+        if (firstLoad === false) {
+            console.log('Received initial data from server:', jsonData);
+
+            if (settings.film_type !== serverSettings.film_type || 
+                settings.border !== serverSettings.border || 
+                settings.file_format !== serverSettings.file_format) {
+                console.log('\x1b[31m%s\x1b[0m', 'Client and server settings are not in sync');
+                compareAndProcessSettings();
+            } else {
+                console.log('\x1b[32m%s\x1b[0m', 'Client and server settings are in sync');
+                input();
+            }
+        }
+        
+        firstLoad = true;
+
+        // Parse and handle JSON data
+        const jsonData = accumulatedData.slice(0, jsonEndIndex).toString();
+        let parsedData = JSON.parse(jsonData);
+        console.log("Parsed JSON data: ", parsedData);
+
+        // Update server settings or perform actions based on JSON data
+
+        // Clear processed JSON data from buffer
         accumulatedData = accumulatedData.slice(jsonEndIndex + '<END_OF_JSON>'.length);
-    } else {
-        console.log("Complete JSON data not yet received.");
+    } catch (e) {
+        console.error('Error parsing JSON:', e);
+        // Implement error handling or re-sync mechanism
     }
- }
+
+    accumulatedData = Buffer.alloc(0);
+
+}
 
 function handleImageData(data) {
     console.log('Received image data: ', accumulatedData.length + ' bytes');
@@ -163,7 +182,6 @@ function handleImageData(data) {
                 } else {
                     console.error('Invalid image size received:', sizeInfo);
                     currentState = 'AWAITING_SIZE';
-                    accumulatedData = Buffer.alloc(0);
                     break;
                 }
             } else {
@@ -183,13 +201,13 @@ function handleImageData(data) {
                 currentState = 'AWAITING_SIZE';
                 accumulatedData = accumulatedData.slice(imageSize);
                 console.log('Image processed, awaiting next screenshot size');
+                accumulatedData = Buffer.alloc(0);
                 
             } else {
                 break;
             }
         }
     }
-    accumulatedData = Buffer.alloc(0);
 
 }
 
