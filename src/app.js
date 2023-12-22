@@ -71,127 +71,89 @@ client.on('error', (err) => console.error('\x1b[31m%s\x1b[0m', 'Socket error:', 
 server.listen(port, () => console.log('\x1b[37m%s\x1b[0m', `Server listening at http://localhost:${port}`));
 
 client.on('data', (data) => {
+    console.log(`Received new data chunk of length: ${data.length}`);
+
+    // Concatenate new data to the accumulated buffer
     accumulatedData = Buffer.concat([accumulatedData, data]);
 
-    while (accumulatedData.length) {
-        // Attempt to read the header from the accumulated data
-        const headerEndIndex = accumulatedData.indexOf('\n');
-        if (headerEndIndex === -1) {
-            // No complete header found in the data yet, wait for more data
-            break;
-        }
+    // Check for the JSON header and its delimiter
+    const jsonHeaderIndex = accumulatedData.indexOf('JSON\n');
+    const jsonEndIndex = accumulatedData.indexOf('<END_OF_JSON>');
 
-        // Extract and process the header
-        const header = accumulatedData.slice(0, headerEndIndex).toString();
-        console.log(`Header received: ${header}`);
+    if (jsonHeaderIndex !== -1 && jsonEndIndex > jsonHeaderIndex) {
+        // Ensure that the end of the JSON content is after the header
+        console.log("Complete JSON message found in buffer, processing as JSON data...");
+        handleJsonData(jsonHeaderIndex, jsonEndIndex);
+    }
 
-        // Remove the processed header from the accumulated data
-        accumulatedData = accumulatedData.slice(headerEndIndex + 1);
+    // Check for the image header and its delimiter
+    const imageHeaderIndex = accumulatedData.indexOf('IMAGE\n');
+    const imageEndIndex = accumulatedData.indexOf('<END_OF_IMAGE>');
 
-        if (header === 'JSON') {
-            // Process JSON Data
-            handleJsonData();
-        } else if (header === 'IMAGE') {
-            // Process Image Data
-            handleImageData();
-        } else {
-            console.log(`Unknown header type: ${header}`);
-            // Implement additional header types or error handling here if needed
-        }
+    if (imageHeaderIndex !== -1 && imageEndIndex > imageHeaderIndex) {
+        // Ensure that the end of the image content is after the header
+        console.log("Complete image found in buffer, processing as image...");
+        handleImageData(imageHeaderIndex, imageEndIndex);
     }
 });
 
-function handleJsonData() {
-    const jsonEndIndex = accumulatedData.indexOf('<END_OF_JSON>');
-    
-    if (jsonEndIndex === -1) {
-        console.log("Awaiting more data for complete JSON...");
-        return;
-    }
-
-    const jsonData = accumulatedData.slice(0, jsonEndIndex).toString();
+function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
     try {
-        let parsedData = JSON.parse(jsonData);
-        console.log("Parsed JSON data: ", parsedData);
+        const jsonData = accumulatedData.slice(jsonHeaderIndex + 'JSON\n'.length, jsonEndIndex).toString();
+        let serverSettings = JSON.parse(jsonData);
 
-        if (serverSettings) {
-            serverSettings = { 
-                film_type: jsonData.film_type, 
-                look: settings.look, 
-                border: jsonData.border, 
-                file_format: jsonData.file_format,
-                state: jsonData.state
-            };
+        serverSettings = { 
+            film_type: serverSettings.film_type, 
+            look: settings.look, 
+            border: serverSettings.border, 
+            file_format: serverSettings.file_format,
+            state: serverSettings.state
+        };
+
+        console.log('Received initial data from server:', serverSettings);
+        console.log('Comparing to client settings: ', settings)
+
+        if (settings.film_type !== serverSettings.film_type || 
+            settings.border !== serverSettings.border || 
+            settings.file_format !== serverSettings.file_format) {
+            console.log('\x1b[31m%s\x1b[0m', 'Client and server settings are not in sync');
+            compareAndProcessSettings(serverSettings);
+        } else {
+            console.log('\x1b[32m%s\x1b[0m', 'Client and server settings are in sync');
+            input();
         }
-
-        if (firstLoad === false) {
-            console.log('Received initial data from server:', jsonData);
-
-            if (settings.film_type !== serverSettings.film_type || 
-                settings.border !== serverSettings.border || 
-                settings.file_format !== serverSettings.file_format) {
-                console.log('\x1b[31m%s\x1b[0m', 'Client and server settings are not in sync');
-                compareAndProcessSettings();
-            } else {
-                console.log('\x1b[32m%s\x1b[0m', 'Client and server settings are in sync');
-                input();
-            }
-        }
-        
-        firstLoad = true;
-
         accumulatedData = accumulatedData.slice(jsonEndIndex + '<END_OF_JSON>'.length);
     } catch (e) {
         console.error('Error parsing JSON:', e);
     }
 }
 
-function handleImageData(data) {
-    console.log('Received image data: ', accumulatedData.length + ' bytes');
-    accumulatedData = Buffer.concat([accumulatedData, data]);
+function handleImageData() {
+    // Find the index where the actual image data starts (after 'ENDSIZE\n')
+    const imageDataStartIndex = accumulatedData.indexOf('\nENDSIZE\n') + '\nENDSIZE\n'.length;
+    const imageDataEndIndex = accumulatedData.indexOf('<END_OF_IMAGE>');
 
-    while (true) {
-        if (currentState === 'AWAITING_SIZE') {
-            const sizeEndIndex = accumulatedData.indexOf('\nENDSIZE\n');
-            if (sizeEndIndex !== -1) {
-                const sizeInfo = accumulatedData.slice(0, sizeEndIndex).toString();
-                const sizeMatch = sizeInfo.match(/SIZE:(\d+)/);
-                if (sizeMatch) {
-                    imageSize = parseInt(sizeMatch[1], 10);
-                    console.log('Expected image size:', imageSize);
-                    currentState = 'AWAITING_IMAGE';
-                    accumulatedData = accumulatedData.slice(sizeEndIndex + '\nENDSIZE\n'.length);
-                    console.log('Size info processed, start downloading image...');
-                } else {
-                    console.error('Invalid image size received:', sizeInfo);
-                    currentState = 'AWAITING_SIZE';
-                    break;
-                }
-            } else {
-                console.log('Awaiting more data for size info...');
-                break;
-            }
-        }
-
-        if (currentState === 'AWAITING_IMAGE') {
-            if (accumulatedData.length >= imageSize) {
-                console.log('Full image data received');
-                const imageData = accumulatedData.slice(0, imageSize);
-                
-                fs.writeFileSync('../public/screenshots/screenshot.png', imageData);
-                console.log('Image written to file.');
-
-                currentState = 'AWAITING_SIZE';
-                accumulatedData = accumulatedData.slice(imageSize);
-                console.log('Image processed, awaiting next screenshot size');
-                accumulatedData = Buffer.alloc(0);
-                
-            } else {
-                break;
-            }
-        }
+    if (imageDataStartIndex === -1 || imageDataEndIndex === -1 || imageDataStartIndex >= imageDataEndIndex) {
+        console.log("Incomplete image data. Awaiting more data...");
+        return;
     }
 
+    try {
+        console.log("Processing image data...");
+
+        // Extract the actual image data (binary data) from the buffer
+        const imageData = accumulatedData.slice(imageDataStartIndex, imageDataEndIndex);
+
+        // Write the binary data to a file
+        fs.writeFileSync('../public/screenshots/screenshot.png', imageData, { encoding: 'binary' });
+        console.log('Image written to file.');
+
+        // Clear processed image data from buffer
+        accumulatedData = accumulatedData.slice(imageDataEndIndex + '<END_OF_IMAGE>'.length);
+        console.log('Image processed, buffer cleared for next data');
+    } catch (e) {
+        console.error('Error processing image data:', e);
+    }
 }
 
 function requestserverSettings(s) {
@@ -216,7 +178,7 @@ function processClicksForSetting(setting) {
     }
 }
 
-function compareAndProcessSettings() {
+function compareAndProcessSettings(serverSettings) {
     if (!serverSettings) {
         console.log('\x1b[31m%s\x1b[0m', 'Current settings not available.');
         return;
@@ -286,8 +248,9 @@ function requestScreenshot() {
 
 function handleCommand(command) {
     switch (command) {
-        case 'clickqueue':
-            console.log(clickQueue)
+        case 'buffer':
+            console.log(accumulatedData.toString());
+            accumulatedData = Buffer.alloc(0);
             input();
             break;
         case 'sync':
