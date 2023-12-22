@@ -71,8 +71,14 @@ def send_screenshot(client_socket):
     img_data = take_screenshot()
     size = len(img_data)
     print('Screenshot Taken / Size: ' + str(size) + ' bytes')
-    client_socket.sendall(str(size).encode('utf-8') + b'\n')  # Using newline as a delimiter
+    
+    # Prepare and send image size information with a unique delimiter
+    size_info = f"SIZE:{size}\nENDSIZE\n"
+    client_socket.sendall(size_info.encode('utf-8'))
+
+    # Send the actual image data
     client_socket.sendall(img_data)
+
     print("Screenshot Sent")
 
 

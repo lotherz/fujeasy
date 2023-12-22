@@ -21,6 +21,7 @@ let jsonMessages = [];
 let serverSettings = null;
 let firstLoad = 0;
 let isScanning = false;
+let expectingSize = true;
 
 let settings = {
     film_type: "colour",
@@ -101,7 +102,22 @@ client.on('data', (data) => {
 });
 
 function handleImageData(data) {
-
+    if (expectingSize) {
+        // Extract the size from the incoming data
+        const result = /SIZE:(\d+)\nENDSIZE\n/.exec(data.toString());
+        if (result) {
+            imageSize = parseInt(result[1]);
+            if (isNaN(imageSize)) {
+                console.error('Invalid image size received');
+                return;
+            }
+            expectingSize = false;
+            data = data.slice(result[0].length); // Remove the size info from the data
+        } else {
+            console.error('Size information not properly received');
+            return;
+        }
+    }
     // Check if we are expecting image size
     if (isImageSize) {
         const sizeData = data.toString().split('\n')[0]; // Assuming the first line is the size
