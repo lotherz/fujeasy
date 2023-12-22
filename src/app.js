@@ -73,30 +73,29 @@ server.listen(port, () => console.log('\x1b[37m%s\x1b[0m', `Server listening at 
 client.on('data', (data) => {
     accumulatedData = Buffer.concat([accumulatedData, data]);
 
-    // Check if the accumulated data contains a complete header
-    const headerEndIndex = accumulatedData.indexOf('\n');
-    if (headerEndIndex !== -1) {
-        const header = accumulatedData.slice(0, headerEndIndex).toString();
-        accumulatedData = accumulatedData.slice(headerEndIndex + 1);
+    console.log(accumulatedData);
 
-        if (header === 'JSON') {
-            // Handle JSON data
-            handleJsonData();
-        } else if (header === 'IMAGE') {
-            // Handle image data
-            handleImageData();
-        } else {
-            console.error('Unknown data type received:', header);
-        }
+    // Check for JSON delimiter
+    const jsonEndIndex = accumulatedData.indexOf('<END_OF_JSON>');
+    if (jsonEndIndex !== -1) {
+        // Extract JSON data
+        const jsonData = accumulatedData.slice(0, jsonEndIndex).toString();
+
+        // Handle JSON data
+        handleJsonData(jsonData);
+
+        // Remove processed JSON data from buffer
+        accumulatedData = accumulatedData.slice(jsonEndIndex + '<END_OF_JSON>'.length);
+    } else {
+        // Process other data (like image data)
+        handleImageData();
     }
+
 });
 
-function handleJsonData() {
-    // Try to parse JSON until a valid JSON is formed
-    // Note: You might need to accumulate data until you have a complete JSON object
+function handleJsonData(jsonData) {
     try {
-        let jsonData = JSON.parse(accumulatedData.toString());
-
+        let parsedData = JSON.parse(jsonData);
         if (serverSettings) {
             serverSettings = { 
                 film_type: jsonData.film_type, 
@@ -122,13 +121,12 @@ function handleJsonData() {
         firstLoad = true;
         accumulatedData = Buffer.alloc(0); // Clear the buffer after processing
     } catch (e) {
-        console.log('Awaiting more data for complete JSON...');
+        console.error('Error parsing JSON:', e);
     }
 }
 
-
 function handleImageData(data) {
-    console.log('Received data chunk: ', data.length + ' bytes');
+    console.log('Received image data: ', accumulatedData.length + ' bytes');
     accumulatedData = Buffer.concat([accumulatedData, data]);
 
     while (true) {

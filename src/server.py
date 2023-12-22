@@ -103,7 +103,7 @@ def process_command(command, client_socket):
         header = "JSON\n".encode('utf-8')
         client_socket.sendall(header)  # Send JSON header
 
-        client_socket.sendall(settings_json.encode('utf-8') + b'<END_OF_JSON>')
+        client_socket.sendall(settings_json.encode('utf-8') + '<END_OF_JSON>')
 
 
 def start_server():
