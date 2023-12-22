@@ -91,7 +91,7 @@ def send_settings(client_socket):
     print(settings)
     settings_json = json.dumps(settings)
     
-    client_socket.sendall("JSON\n".encode('utf-8') + b'\n')  # Send JSON header
+    client_socket.sendall("JSON".encode('utf-8') + b'\n')  # Send JSON header
 
     client_socket.sendall(settings_json.encode('utf-8') + b'<END_OF_JSON>')
 
