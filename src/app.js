@@ -248,11 +248,6 @@ function requestScreenshot() {
 
 function handleCommand(command) {
     switch (command) {
-        case 'buffer':
-            console.log(accumulatedData.toString());
-            accumulatedData = Buffer.alloc(0);
-            input();
-            break;
         case 'sync':
             requestserverSettings();
             break;
@@ -270,7 +265,7 @@ function handleCommand(command) {
             addClick(clickLocations.start_button[0], clickLocations.start_button[1]);
             //Check if film has been inserted
             isScanning = true;
-            scan();
+            input();
             break;
         case '?':
         case 'help':
