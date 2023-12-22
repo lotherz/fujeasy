@@ -73,7 +73,6 @@ def send_screenshot(client_socket):
     print('Screenshot Taken / Size: ' + str(size) + ' bytes')
 
     header = "IMAGE\n".encode('utf-8')
-    
     client_socket.sendall(header)  # Send image header
 
     # Prepare and send image size information with a unique delimiter
@@ -90,8 +89,9 @@ def send_settings(client_socket):
     settings = derive_settings()
     print(settings)
     settings_json = json.dumps(settings)
-    
-    client_socket.sendall("JSON".encode('utf-8') + b'\n')  # Send JSON header
+
+    header = "JSON\n".encode('utf-8')
+    client_socket.sendall(header)  # Send JSON header
 
     client_socket.sendall(settings_json.encode('utf-8') + b'<END_OF_JSON>')
 

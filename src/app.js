@@ -153,14 +153,11 @@ function handleJsonData() {
         // Update server settings or perform actions based on JSON data
 
         // Clear processed JSON data from buffer
-        accumulatedData = accumulatedData.slice(jsonEndIndex + '<END_OF_JSON>'.length);
+        accumulatedData = Buffer.alloc(0);
     } catch (e) {
         console.error('Error parsing JSON:', e);
         // Implement error handling or re-sync mechanism
     }
-
-    accumulatedData = Buffer.alloc(0);
-
 }
 
 function handleImageData(data) {
