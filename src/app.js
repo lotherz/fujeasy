@@ -13,7 +13,6 @@ const wss = new WebSocket.Server({ server });
 const port = 3000;
 let clickQueue = [];
 let isProcessingClicks = false;
-let serverSettings = null;
 let isScanning = false;
 let accumulatedData = Buffer.alloc(0);
 
@@ -23,6 +22,9 @@ let settings = {
     file_format: "JPEG",
     look: "standard",
 };
+
+let serverSettings = null;
+
 
 function input() {
     rl.question('Enter command: ', (command) => {
@@ -94,10 +96,9 @@ function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
 
         serverSettings = { 
             film_type: serverSettings.film_type, 
-            look: settings.look, 
             border: serverSettings.border, 
             file_format: serverSettings.file_format,
-            state: serverSettings.state
+            look: settings.look
         };
 
         //console.log('Received initial data from server:', serverSettings);
@@ -110,6 +111,7 @@ function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
             compareAndProcessSettings(serverSettings);
         } else {
             console.log('\x1b[32m%s\x1b[0m', 'Client and server settings are in sync');
+            serverSettings = settings;
             input();
         }
         accumulatedData = accumulatedData.slice(jsonEndIndex + '<END_OF_JSON>'.length);
@@ -243,6 +245,14 @@ function handleCommand(command) {
             break;
         case 'clientSettings':
             console.log(settings);
+            input();
+            break;
+        case 'serverSettings':
+            if (serverSettings) {
+                console.log(serverSettings)
+            } else {
+                console.log('\x1b[31m%s\x1b[0m', 'No server settings available.');
+            }
             input();
             break;
         case 'start':

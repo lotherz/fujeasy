@@ -36,10 +36,9 @@ def get_look():
 
     for look, reference in look_types.items():
         if compare_with_reference(screenshot, reference, monitored_regions["look_dropdown"]):
+            pyautogui.click(550, 300)  # Click on the "All" button to commit the change
+            print("Look: " + look)
             return look
-
-    pyautogui.click(550, 300)  # Click on the "All" button to commit the change
-    return "standard"  # or a default value if no match is found
 
 
 def derive_settings():
