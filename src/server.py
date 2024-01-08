@@ -16,11 +16,11 @@ reference_images = {
 }
 
 monitored_regions = {
-    "film_type":                (240, 146, 117, 68),    # Example coordinates for film_type
-    "border":                   (386, 146, 168, 68),    # Example coordinates for border
-    "file_format":              (386, 376, 116, 67),    # Example coordinates for file_format
+    "film_type":                (240, 146, 117, 68),
+    "border":                   (386, 146, 168, 68),
+    "file_format":              (386, 376, 116, 67), 
     "look_window":              (176, 207, 449, 187),
-    "look_dropdown":            (364, 290, 95, 18),
+    "look_dropdown":            (365, 294, 7, 10),
     #                           (x-coordinate, y-coordinate, width, height)
 }
 
