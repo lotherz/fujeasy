@@ -28,10 +28,10 @@ def get_look():
     pyautogui.click(85, 520)  # Click on the "Custom" button
     
     # Introduce a delay to allow the UI to update
-    time.sleep(2)  # Delay of 1 second; adjust as needed
+    time.sleep(1)  # Delay of 1 second; adjust as needed
 
-    screenshot = take_screenshot()
-
+    screenshot = take_screenshot_and_display()
+    
     looks = {
         "soft": reference_images["look_soft"],
         "standard": reference_images["look_standard"],
