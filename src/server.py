@@ -3,6 +3,7 @@ import json
 import pyautogui
 import io
 import cv2
+import time
 import numpy as np
 from PIL import Image
 
@@ -25,7 +26,11 @@ monitored_regions = {
 
 def get_look():
     pyautogui.click(85, 520)  # Click on the "Custom" button
-    screenshot = take_screenshot_and_display()
+    
+    # Introduce a delay to allow the UI to update
+    time.sleep(2)  # Delay of 1 second; adjust as needed
+
+    screenshot = take_screenshot()
 
     looks = {
         "soft": reference_images["look_soft"],
@@ -36,18 +41,16 @@ def get_look():
     threshold = 0.99
     
     for look, reference in looks.items():
-        print("Trying " + look)
         if compare_with_reference(screenshot, reference, monitored_regions["look_dropdown"], threshold):
-            pyautogui.click(550, 300)  # Click on the "All" button to commit the change
+            pyautogui.click(550, 300)  # Click to commit the change, if needed
             print("Look: " + look)
             return look
         else:
             print(look + " not found, trying next")
     
-    pyautogui.click(550, 300)  # Click on the "All" button to commit the change
+    pyautogui.click(550, 300)  # Click to commit the change, if needed
     print("Look not found, defaulting to standard")
     return "standard"
-
 
 def derive_settings():
 
