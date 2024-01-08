@@ -36,7 +36,8 @@ def get_look():
 
     for look, reference in look_types.items():
         print("Checking look: " + look)
-        if compare_with_reference(screenshot, reference, monitored_regions["look_dropdown"]):
+        threshold = 1
+        if compare_with_reference(screenshot, reference, monitored_regions["look_dropdown"], threshold):
             pyautogui.click(550, 300)  # Click on the "All" button to commit the change
             print("Look: " + look)
             return look
@@ -45,15 +46,16 @@ def get_look():
 def derive_settings():
 
     screenshot = take_screenshot()
+    threshold = 0.99
     settings = {
-        "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], monitored_regions["film_type"]) else "bw",
-        "border": 0 if compare_with_reference(screenshot, reference_images["border"], monitored_regions["border"]) else 1,
-        "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], monitored_regions["file_format"]) else "TIFF",
+        "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], monitored_regions["film_type"], threshold) else "bw",
+        "border": 0 if compare_with_reference(screenshot, reference_images["border"], monitored_regions["border"], threshold) else 1,
+        "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], monitored_regions["file_format"], threshold) else "TIFF",
         "look": get_look()
     }
     return settings
 
-def compare_with_reference(screenshot_data, reference_image_path, region):
+def compare_with_reference(screenshot_data, reference_image_path, region, threshold):
     # Load reference image
     reference_image = cv2.imread(reference_image_path)
     
@@ -79,8 +81,6 @@ def compare_with_reference(screenshot_data, reference_image_path, region):
     similarity = cv2.matchTemplate(region_of_interest, reference_image, cv2.TM_CCOEFF_NORMED)
     _, max_val, _, _ = cv2.minMaxLoc(similarity)
 
-    # Assuming a threshold for similarity to consider the setting as True
-    threshold = 0.99
     return max_val >= threshold
 
 
