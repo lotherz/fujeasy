@@ -27,8 +27,7 @@ monitored_regions = {
 def get_look():
     pyautogui.click(85, 520)  # Click on the "Custom" button
     
-    # Introduce a delay to allow the UI to update
-    time.sleep(1)  # Delay of 1 second; adjust as needed
+    time.sleep(1) # Introduce a delay to allow the UI to update
 
     screenshot = take_screenshot()
     
@@ -43,7 +42,7 @@ def get_look():
     for look, reference in looks.items():
         if compare_with_reference(screenshot, reference, monitored_regions["look_dropdown"], threshold):
             pyautogui.click(550, 300)  # Click to commit the change, if needed
-            print("Look: " + look)
+            #print("Look: " + look)
             return look
         else:
             print(look + " not found, trying next")
@@ -67,7 +66,7 @@ def derive_settings():
 def compare_with_reference(screenshot_data, reference_image_path, region, threshold):
     reference_image = cv2.imread(reference_image_path)
     if reference_image is None:
-        print("Error loading reference image: " + reference_image_path)
+        #print("Error loading reference image: " + reference_image_path)
         return False
 
     reference_image = cv2.cvtColor(reference_image, cv2.COLOR_BGR2GRAY)
@@ -81,7 +80,7 @@ def compare_with_reference(screenshot_data, reference_image_path, region, thresh
     similarity = cv2.matchTemplate(region_of_interest, reference_image, cv2.TM_CCORR_NORMED)
     _, max_val, _, _ = cv2.minMaxLoc(similarity)
 
-    print("Comparing with " + reference_image_path + ", similarity score: " + str(max_val))
+    #print("Comparing with " + reference_image_path + ", similarity score: " + str(max_val))
 
     return max_val >= threshold
 
