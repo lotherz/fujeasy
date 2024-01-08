@@ -6,27 +6,26 @@ import cv2
 import numpy as np
 from PIL import Image
 
-# Assuming you have reference images stored as 'film_type_true.png', 'border_true.png', 'file_format_true.png'
 reference_images = {
     "film_type": "//Mac/Home/Documents/fujeasy/public/screenshots/film_type_true.png",
     "border": "//Mac/Home/Documents/fujeasy/public/screenshots/border_true.png",
     "file_format": "//Mac/Home/Documents/fujeasy/public/screenshots/file_format_true.png"
 }
 
+monitored_regions = {
+    "film_type":    (240, 146, 117, 68),    # Example coordinates for film_type
+    "border":       (386, 146, 168, 68),    # Example coordinates for border
+    "file_format":  (386, 376, 116, 67)     # Example coordinates for file_format
+    #               (x-coordinate, y-coordinate, width, height)
+}
+1
 def derive_settings():
-    # Define regions for each setting
-    regions = {
-        "film_type":    (240, 146, 117, 68),    # Example coordinates for film_type
-        "border":       (386, 146, 168, 68),    # Example coordinates for border
-        "file_format":  (386, 376, 116, 67)     # Example coordinates for file_format
-                                                # (x-coordinate, y-coordinate, width, height)
-    }
 
     screenshot = take_screenshot()
     settings = {
-        "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], regions["film_type"]) else "bw",
-        "border": 0 if compare_with_reference(screenshot, reference_images["border"], regions["border"]) else 1,
-        "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], regions["file_format"]) else "TIFF"
+        "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], monitored_regions["film_type"]) else "bw",
+        "border": 0 if compare_with_reference(screenshot, reference_images["border"], monitored_regions["border"]) else 1,
+        "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], monitored_regions["file_format"]) else "TIFF"
     }
     return settings
 

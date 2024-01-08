@@ -13,17 +13,9 @@ const wss = new WebSocket.Server({ server });
 const port = 3000;
 let clickQueue = [];
 let isProcessingClicks = false;
-let isImageSize = true;
-let imageBuffer;
-let bufferOffset = 0;
-let jsonMessages = [];
 let serverSettings = null;
-let firstLoad = false;
 let isScanning = false;
-let expectingSize = true;
-let currentState = 'AWAITING_SIZE';
 let accumulatedData = Buffer.alloc(0);
-let imageSize = 0;  
 
 let settings = {
     film_type: "colour",
@@ -71,7 +63,7 @@ client.on('error', (err) => console.error('\x1b[31m%s\x1b[0m', 'Socket error:', 
 server.listen(port, () => console.log('\x1b[37m%s\x1b[0m', `Server listening at http://localhost:${port}`));
 
 client.on('data', (data) => {
-    console.log(`Received new data chunk of length: ${data.length}`);
+    //console.log(`Received new data chunk of length: ${data.length}`);
 
     // Concatenate new data to the accumulated buffer
     accumulatedData = Buffer.concat([accumulatedData, data]);
@@ -82,7 +74,7 @@ client.on('data', (data) => {
 
     if (jsonHeaderIndex !== -1 && jsonEndIndex > jsonHeaderIndex) {
         // Ensure that the end of the JSON content is after the header
-        console.log("Complete JSON message found in buffer, processing as JSON data...");
+        //console.log("Complete JSON message found in buffer, processing as JSON data...");
         handleJsonData(jsonHeaderIndex, jsonEndIndex);
     }
 
@@ -92,7 +84,6 @@ client.on('data', (data) => {
 
     if (imageHeaderIndex !== -1 && imageEndIndex > imageHeaderIndex) {
         // Ensure that the end of the image content is after the header
-        console.log("Complete image found in buffer, processing as image...");
         handleImageData(imageHeaderIndex, imageEndIndex);
     }
 });
@@ -110,8 +101,8 @@ function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
             state: serverSettings.state
         };
 
-        console.log('Received initial data from server:', serverSettings);
-        console.log('Comparing to client settings: ', settings)
+        //console.log('Received initial data from server:', serverSettings);
+        //console.log('Comparing to client settings: ', settings)
 
         if (settings.film_type !== serverSettings.film_type || 
             settings.border !== serverSettings.border || 
@@ -146,11 +137,10 @@ function handleImageData() {
 
         // Write the binary data to a file
         fs.writeFileSync('../public/screenshots/screenshot.png', imageData, { encoding: 'binary' });
-        console.log('Image written to file.');
+        console.log('\x1b[32m%s\x1b[0m', 'Image written to file.');
 
         // Clear processed image data from buffer
         accumulatedData = accumulatedData.slice(imageDataEndIndex + '<END_OF_IMAGE>'.length);
-        console.log('Image processed, buffer cleared for next data');
     } catch (e) {
         console.error('Error processing image data:', e);
     }
@@ -218,7 +208,7 @@ function addClick(x, y) {
 function processClickQueue() {
     if (clickQueue.length === 0) {
         if (isProcessingClicks) {
-            console.log('All clicks processed');
+            console.log('\x1b[32m%s\x1b[0m', 'All clicks processed');
             isProcessingClicks = false;
             input(); // Ready to accept the next command
         }
@@ -250,13 +240,10 @@ function handleCommand(command) {
     switch (command) {
         case 'sync':
             requestserverSettings();
+            input();
             break;
         case 'clientSettings':
             console.log(settings);
-            input();
-            break;
-        case 'serverSettings':
-            requestserverSettings();
             input();
             break;
         case 'start':
@@ -269,7 +256,7 @@ function handleCommand(command) {
             break;
         case '?':
         case 'help':
-            console.log('Commands: screenshot, click, settings, exit');
+            console.log('Commands: screenshot, click, settings, exit, sync, clientSettings, scan, help');
             input();
             break;
         case 'screenshot':
