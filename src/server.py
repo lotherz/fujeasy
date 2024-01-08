@@ -36,6 +36,7 @@ def get_look():
     threshold = 0.99
     
     for look, reference in looks.items():
+        print("Trying " + look)
         if compare_with_reference(screenshot, reference, monitored_regions["look_dropdown"], threshold):
             pyautogui.click(550, 300)  # Click on the "All" button to commit the change
             print("Look: " + look)
