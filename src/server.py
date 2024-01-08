@@ -51,7 +51,7 @@ def get_look():
 
 def derive_settings():
 
-    screenshot = take_screenshot()
+    screenshot = take_screenshot_and_display()
     threshold = 0.99
     settings = {
         "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], monitored_regions["film_type"], threshold) else "bw",
@@ -84,6 +84,14 @@ def compare_with_reference(screenshot_data, reference_image_path, region, thresh
 
 def take_screenshot():
     screenshot = pyautogui.screenshot()
+    img_byte_arr = io.BytesIO()
+    screenshot.save(img_byte_arr, format='PNG')
+    return img_byte_arr.getvalue()
+
+def take_screenshot_and_display():
+    screenshot = pyautogui.screenshot()
+    screenshot.show()  # Display the screenshot using the default image viewer
+
     img_byte_arr = io.BytesIO()
     screenshot.save(img_byte_arr, format='PNG')
     return img_byte_arr.getvalue()
