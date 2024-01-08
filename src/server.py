@@ -86,6 +86,7 @@ def compare_with_reference(screenshot_data, reference_image_path, region, thresh
     # Note: You may need to adjust the method of comparison based on your specific needs
     similarity = cv2.matchTemplate(region_of_interest, reference_image, cv2.TM_CCOEFF_NORMED)
     _, max_val, _, _ = cv2.minMaxLoc(similarity)
+    print(max_val)
 
     return max_val >= threshold
 
