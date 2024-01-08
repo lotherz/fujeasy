@@ -19,10 +19,9 @@ let accumulatedData = Buffer.alloc(0);
 
 let settings = {
     film_type: "colour",
-    look: "standard",
     border: 0,
     file_format: "JPEG",
-    state: "settings"
+    look: "standard",
 };
 
 function input() {

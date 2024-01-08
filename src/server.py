@@ -9,23 +9,47 @@ from PIL import Image
 reference_images = {
     "film_type": "//Mac/Home/Documents/fujeasy/public/screenshots/film_type_true.png",
     "border": "//Mac/Home/Documents/fujeasy/public/screenshots/border_true.png",
-    "file_format": "//Mac/Home/Documents/fujeasy/public/screenshots/file_format_true.png"
+    "file_format": "//Mac/Home/Documents/fujeasy/public/screenshots/file_format_true.png",
+    "look_soft": "//Mac/Home/Documents/fujeasy/public/screenshots/look_soft_3.png",
+    "look_standard": "//Mac/Home/Documents/fujeasy/public/screenshots/look_standard_4.png",
+    "look_rich": "//Mac/Home/Documents/fujeasy/public/screenshots/look_rich_5.png",
 }
 
 monitored_regions = {
-    "film_type":    (240, 146, 117, 68),    # Example coordinates for film_type
-    "border":       (386, 146, 168, 68),    # Example coordinates for border
-    "file_format":  (386, 376, 116, 67)     # Example coordinates for file_format
-    #               (x-coordinate, y-coordinate, width, height)
+    "film_type":                (240, 146, 117, 68),    # Example coordinates for film_type
+    "border":                   (386, 146, 168, 68),    # Example coordinates for border
+    "file_format":              (386, 376, 116, 67),    # Example coordinates for file_format
+    "look_window":              (176, 207, 449, 187),
+    "look_dropdown":            (364, 290, 449, 95),
+    #                           (x-coordinate, y-coordinate, width, height)
 }
-1
+
+def get_look():
+    pyautogui.click(85, 520)  # Click on the "Custom" button
+    screenshot = take_screenshot()
+
+    look_types = {
+        "soft": reference_images["look_soft"],
+        "standard": reference_images["look_standard"],
+        "rich": reference_images["look_rich"]
+    }
+
+    for look, reference in look_types.items():
+        if compare_with_reference(screenshot, reference, monitored_regions["look_dropdown"]):
+            return look
+
+    pyautogui.click(550, 300)  # Click on the "All" button to commit the change
+    return "standard"  # or a default value if no match is found
+
+
 def derive_settings():
 
     screenshot = take_screenshot()
     settings = {
         "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], monitored_regions["film_type"]) else "bw",
         "border": 0 if compare_with_reference(screenshot, reference_images["border"], monitored_regions["border"]) else 1,
-        "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], monitored_regions["file_format"]) else "TIFF"
+        "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], monitored_regions["file_format"]) else "TIFF",
+        "look": get_look()
     }
     return settings
 
