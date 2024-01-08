@@ -33,17 +33,20 @@ def get_look():
         "standard": reference_images["look_standard"],
         "rich": reference_images["look_rich"]
     }
-
+    
+    threshold = 0.99
+    
     for look, reference in look_types.items():
-        threshold = 0.99
-        print("Checking look: " + look + "... Similarity: " + compare_with_reference(screenshot, reference, monitored_regions["look_dropdown"], threshold))
         if compare_with_reference(screenshot, reference, monitored_regions["look_dropdown"], threshold):
             pyautogui.click(550, 300)  # Click on the "All" button to commit the change
             print("Look: " + look)
             return look
-    else:  
-        pyautogui.click(550, 300)
-        print("No look found, defaulting to standard")    
+        else:
+            pyautogui.click(550, 300)  # Click on the "All" button to commit the change
+            print(look + " not found, trying next")
+            
+    print("Look not found, defaulting to standard")
+    return "standard"
 
 
 def derive_settings():
