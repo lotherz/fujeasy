@@ -35,10 +35,9 @@ def get_look():
     }
 
     for look, reference in look_types.items():
-        comparison_val = compare_with_reference(screenshot, reference, monitored_regions["look_dropdown"], threshold)
-        print("Checking look: " + look + "... Similarity: " + str(comparison_val))
+        print("Checking look: " + look + "... Similarity: " + compare_with_reference(screenshot, reference, monitored_regions["look_dropdown"], threshold))
         threshold = 0.99
-        if comparison_val:
+        if compare_with_reference(screenshot, reference, monitored_regions["look_dropdown"], threshold):
             pyautogui.click(550, 300)  # Click on the "All" button to commit the change
             print("Look: " + look)
             return look
@@ -68,7 +67,7 @@ def compare_with_reference(screenshot_data, reference_image_path, region, thresh
         print("Error loading reference image: " + reference_image_path)
         return False
 
-    # Convert the reference image to grayscale<
+    # Convert the reference image to grayscale
     reference_image = cv2.cvtColor(reference_image, cv2.COLOR_BGR2GRAY)
 
     # Convert screenshot data to image
