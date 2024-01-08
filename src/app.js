@@ -48,7 +48,9 @@ const clickLocations = {
     'jpeg': [[450, 405], [217, 247], [615, 191]],
     'start_button': [726, 515],
     'cancel_button': [401, 362],
-
+    'look_soft': [[85, 520], [400, 300], [416, 369], [550, 300]],
+    'look_standard': [[85, 520], [400, 300], [416, 383], [550, 300]],
+    'look_rich': [[85, 520], [400, 300], [416, 400], [550, 300]]
 };
 
 app.use(express.static('../public'));
@@ -98,10 +100,10 @@ function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
             film_type: serverSettings.film_type, 
             border: serverSettings.border, 
             file_format: serverSettings.file_format,
-            look: settings.look
+            look: serverSettings.look
         };
 
-        //console.log('Received initial data from server:', serverSettings);
+        console.log('Received initial data from server:', serverSettings);
         //console.log('Comparing to client settings: ', settings)
 
         if (settings.film_type !== serverSettings.film_type || 
@@ -194,6 +196,18 @@ function compareAndProcessSettings(serverSettings) {
         console.log('\x1b[31m%s\x1b[0m', 'File format out of sync');
         const fileFormatSetting = settings.file_format === 'TIFF' ? 'tiff' : 'jpeg';
         processClicksForSetting(fileFormatSetting);
+    }
+
+    if (serverSettings.look !== settings.look) {
+        console.log('\x1b[31m%s\x1b[0m', 'Look out of sync');
+        switch(serverSettings.look) {
+            case 'soft':
+                processClicksForSetting('look_soft');
+            case 'standard':
+                processClicksForSetting('look_standard');
+            case 'rich':
+                processClicksForSetting('look_rich');
+        }
     }
 
     processClickQueue();
