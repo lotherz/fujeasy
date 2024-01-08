@@ -42,9 +42,9 @@ def get_look():
             print("Look: " + look)
             return look
         else:
-            pyautogui.click(550, 300)  # Click on the "All" button to commit the change
             print(look + " not found, trying next")
-            
+    
+    pyautogui.click(550, 300)  # Click on the "All" button to commit the change
     print("Look not found, defaulting to standard")
     return "standard"
 
