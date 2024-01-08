@@ -20,7 +20,7 @@ monitored_regions = {
     "border":                   (386, 146, 168, 68),    # Example coordinates for border
     "file_format":              (386, 376, 116, 67),    # Example coordinates for file_format
     "look_window":              (176, 207, 449, 187),
-    "look_dropdown":            (364, 290, 449, 95),
+    "look_dropdown":            (364, 290, 95, 18),
     #                           (x-coordinate, y-coordinate, width, height)
 }
 
@@ -36,7 +36,7 @@ def get_look():
 
     for look, reference in look_types.items():
         print("Checking look: " + look)
-        threshold = 0.5
+        threshold = 0.99
         if compare_with_reference(screenshot, reference, monitored_regions["look_dropdown"], threshold):
             pyautogui.click(550, 300)  # Click on the "All" button to commit the change
             print("Look: " + look)
