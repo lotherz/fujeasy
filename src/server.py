@@ -30,7 +30,7 @@ def get_look():
     # Introduce a delay to allow the UI to update
     time.sleep(1)  # Delay of 1 second; adjust as needed
 
-    screenshot = take_screenshot_and_display()
+    screenshot = take_screenshot()
     
     looks = {
         "soft": reference_images["look_soft"],
