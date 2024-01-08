@@ -19,7 +19,6 @@ monitored_regions = {
     "film_type":                (240, 146, 117, 68),
     "border":                   (386, 146, 168, 68),
     "file_format":              (386, 376, 116, 67), 
-    "look_window":              (176, 207, 449, 187),
     "look_dropdown":            (365, 294, 7, 10),
     #                           (x-coordinate, y-coordinate, width, height)
 }
@@ -28,7 +27,7 @@ def get_look():
     pyautogui.click(85, 520)  # Click on the "Custom" button
     screenshot = take_screenshot()
 
-    look_types = {
+    looks = {
         "soft": reference_images["look_soft"],
         "standard": reference_images["look_standard"],
         "rich": reference_images["look_rich"]
@@ -36,7 +35,7 @@ def get_look():
     
     threshold = 0.99
     
-    for look, reference in look_types.items():
+    for look, reference in looks.items():
         if compare_with_reference(screenshot, reference, monitored_regions["look_dropdown"], threshold):
             pyautogui.click(550, 300)  # Click on the "All" button to commit the change
             print("Look: " + look)
@@ -62,34 +61,25 @@ def derive_settings():
     return settings
 
 def compare_with_reference(screenshot_data, reference_image_path, region, threshold):
-    # Load reference image
     reference_image = cv2.imread(reference_image_path)
-    
-    # Check if the reference image is loaded correctly
     if reference_image is None:
         print("Error loading reference image: " + reference_image_path)
         return False
 
-    # Convert the reference image to grayscale
     reference_image = cv2.cvtColor(reference_image, cv2.COLOR_BGR2GRAY)
-
-    # Convert screenshot data to image
     screenshot_image = Image.open(io.BytesIO(screenshot_data))
     screenshot_image = np.array(screenshot_image)
     screenshot_image = cv2.cvtColor(screenshot_image, cv2.COLOR_RGB2GRAY)
 
-    # Extract the region of interest
     x, y, w, h = region
     region_of_interest = screenshot_image[y:y+h, x:x+w]
 
-    # Compare the region of interest with the reference image
-    # Note: You may need to adjust the method of comparison based on your specific needs
     similarity = cv2.matchTemplate(region_of_interest, reference_image, cv2.TM_CCORR_NORMED)
     _, max_val, _, _ = cv2.minMaxLoc(similarity)
-    print(max_val)
+
+    print(f"Comparing with {reference_image_path}, similarity score: {max_val}")
 
     return max_val >= threshold
-
 
 def take_screenshot():
     screenshot = pyautogui.screenshot()
