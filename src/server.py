@@ -25,7 +25,7 @@ monitored_regions = {
 
 def get_look():
     pyautogui.click(85, 520)  # Click on the "Custom" button
-    screenshot = take_screenshot()
+    screenshot = take_screenshot_and_display()
 
     looks = {
         "soft": reference_images["look_soft"],
@@ -51,7 +51,7 @@ def get_look():
 
 def derive_settings():
 
-    screenshot = take_screenshot_and_display()
+    screenshot = take_screenshot()
     threshold = 0.99
     settings = {
         "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], monitored_regions["film_type"], threshold) else "bw",
