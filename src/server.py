@@ -132,7 +132,7 @@ def scan():
     screenshot = take_screenshot()
     insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99)
     while insert_film_dialogue :
-        print("Film Insert Dialogue Found, similarity: " + insert_film_dialogue)
+        print("Film Insert Dialogue Found, similarity: " + str(insert_film_dialogue))
         time.sleep(2)
         insert_film_dialogue
     else :
