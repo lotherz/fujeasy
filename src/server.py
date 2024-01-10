@@ -22,7 +22,7 @@ monitored_regions = {
     "border":                   (386, 146, 168, 68),
     "file_format":              (386, 376, 116, 67), 
     "look_dropdown":            (365, 294, 7, 10),
-    "film_insert_dialogue":     (172, 206, 458, 189),
+    "film_insert_dialogue":     (171, 206, 458, 189),
     #                           (x-coordinate, y-coordinate, width, height)
 }
 
@@ -132,12 +132,12 @@ def scan():
     screenshot = take_screenshot()
     insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99)
     while insert_film_dialogue :
-        print("Film Insert Dialogue Found, similarity: " + str(insert_film_dialogue))
+        print("Film Insert Dialogue Found")
         time.sleep(2)
-        insert_film_dialogue
-    else :
-        print("Screen Changed")
-
+        if insert_film_dialogue == False :
+            print("Screen Changed")
+            return
+        
     #while is_scanning:
        # print("Scanning")
         #time.sleep(1)
