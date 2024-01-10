@@ -7,8 +7,6 @@ import time
 import numpy as np
 from PIL import Image
 
-is_scanning = False
-
 reference_images = {
     "film_type": "//Mac/Home/Documents/fujeasy/public/screenshots/film_type_true.png",
     "border": "//Mac/Home/Documents/fujeasy/public/screenshots/border_true.png",
@@ -132,9 +130,11 @@ def send_settings(client_socket):
 
 def scan():
     screenshot = take_screenshot()
-    while compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99) :
+    insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99)
+    while insert_film_dialogue :
         print("Film Insert Dialogue Found")
         time.sleep(2)
+        insert_film_dialogue
     else :
         print("Screen Changed")
 
