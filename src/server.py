@@ -132,20 +132,11 @@ def send_settings(client_socket):
 
 def scan():
     screenshot = take_screenshot()
-    is_scanning = True
-    while is_scanning:
-        #check for film insert dialogue
-        if compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99) :
-            print("Film Insert Dialogue Found")
-        else:
-            print("Film Inserted Dialogue Not found")
-            is_scanning = False
-            return
-        
+    while compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99) :
+        print("Film Insert Dialogue Found")
         time.sleep(1)
+    print("Screen changed")
 
-   
-    
     #while is_scanning:
        # print("Scanning")
         #time.sleep(1)
