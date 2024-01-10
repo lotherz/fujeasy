@@ -130,24 +130,14 @@ def send_settings(client_socket):
 
 def scan():
     while True:
+        print("Awaiting Film Insertion / Cancel Scan")
         screenshot = take_screenshot()
         insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99)
         if insert_film_dialogue:
-            print("Film Insert Dialogue Found")
             time.sleep(1)
         else:
-            print("Screen Changed")
-            return
-        
-    #while is_scanning:
-       # print("Scanning")
-        #time.sleep(1)
-        #:
-         #   print("Film Insert Dialogue Found")
-          #  return
-        #else :
-         #   print("Film Inserted")
-        #return
+            break
+    print("Scan Cancelled")
     
 
 def process_command(command, client_socket):
@@ -163,12 +153,8 @@ def process_command(command, client_socket):
         send_settings(client_socket)
         
     elif command['type'] == 'scan':
-        is_scanning = True
         scan()
-        
-    elif command['type'] == 'cancelscan':
-        is_scanning = False
-        
+
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', 8080))

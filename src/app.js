@@ -264,9 +264,7 @@ function scan(isScanning) {
         client.write(command + '<END_OF_JSON>');
     } else {
         addClick(clickLocations.cancel_scan_btn[0], clickLocations.cancel_scan_btn[1]);
-        const command = JSON.stringify({ type: 'cancelscan' });
         console.log(`Ending scan...`);  // Debug log
-        client.write(command + '<END_OF_JSON>');
     }
 }
 
