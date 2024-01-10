@@ -134,8 +134,9 @@ def scan():
     screenshot = take_screenshot()
     while compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99) :
         print("Film Insert Dialogue Found")
-        time.sleep(1)
-    print("Screen changed")
+        time.sleep(2)
+    else :
+        print("Screen Changed")
 
     #while is_scanning:
        # print("Scanning")
