@@ -7,6 +7,8 @@ import time
 import numpy as np
 from PIL import Image
 
+is_scanning = False
+
 reference_images = {
     "film_type": "//Mac/Home/Documents/fujeasy/public/screenshots/film_type_true.png",
     "border": "//Mac/Home/Documents/fujeasy/public/screenshots/border_true.png",
@@ -14,6 +16,7 @@ reference_images = {
     "look_soft": "//Mac/Home/Documents/fujeasy/public/screenshots/look_soft_3.png",
     "look_standard": "//Mac/Home/Documents/fujeasy/public/screenshots/look_standard_4.png",
     "look_rich": "//Mac/Home/Documents/fujeasy/public/screenshots/look_rich_5.png",
+    "film_insert_dialogue": "//Mac/Home/Documents/fujeasy/public/screenshots/film_insert_dialogue.png"
 }
 
 monitored_regions = {
@@ -21,6 +24,7 @@ monitored_regions = {
     "border":                   (386, 146, 168, 68),
     "file_format":              (386, 376, 116, 67), 
     "look_dropdown":            (365, 294, 7, 10),
+    "film_insert_dialogue":     (172, 206, 458, 189),
     #                           (x-coordinate, y-coordinate, width, height)
 }
 
@@ -126,6 +130,19 @@ def send_settings(client_socket):
 
     client_socket.sendall(settings_json.encode('utf-8') + b'<END_OF_JSON>')
 
+def scan():
+    screenshot = take_screenshot()
+    while is_scanning:
+        print("Scanning")
+        time.sleep(1)
+        #if compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99):
+         #   print("Film Insert Dialogue Found")
+          #  return
+        #else :
+         #   print("Film Inserted")
+        #return
+    
+
 def process_command(command, client_socket):
     print("Received command: " + str(command))
     if command['type'] == 'click':
@@ -137,7 +154,14 @@ def process_command(command, client_socket):
 
     elif command['type'] == 'get_settings':
         send_settings(client_socket)
-
+        
+    elif command['type'] == 'scan':
+        is_scanning = True
+        scan()
+        
+    elif command['type'] == 'cancelscan':
+        is_scanning = False
+        
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', 8080))

@@ -25,7 +25,6 @@ let settings = {
 
 let serverSettings = null;
 
-
 function input() {
     rl.question('Enter command: ', (command) => {
         handleCommand(command);
@@ -46,11 +45,11 @@ const clickLocations = {
     'no_border':  [[487, 114]],
     'tiff': [[450, 405], [214, 262], [615, 191]],
     'jpeg': [[450, 405], [217, 247], [615, 191]],
-    'start_button': [726, 515],
-    'cancel_button': [401, 362],
+    'start_scan_btn': [726, 515],
+    'cancel_scan_btn': [401, 362],
     'look_soft': [[85, 520], [400, 300], [416, 369], [550, 300]],
     'look_standard': [[85, 520], [400, 300], [416, 383], [550, 300]],
-    'look_rich': [[85, 520], [400, 300], [416, 400], [550, 300]]
+    'look_rich': [[85, 520], [400, 300], [416, 400], [550, 300]],
 };
 
 app.use(express.static('../public'));
@@ -93,6 +92,7 @@ client.on('data', (data) => {
 
 function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
     try {
+
         const jsonData = accumulatedData.slice(jsonHeaderIndex + 'JSON\n'.length, jsonEndIndex).toString();
         let serverSettings = JSON.parse(jsonData);
 
@@ -108,7 +108,7 @@ function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
 
         if (settings.film_type !== serverSettings.film_type || 
             settings.border !== serverSettings.border || 
-            settings.file_format !== serverSettings.file_format) {
+            settings.file_format !== serverSettings.file_format || settings.look !== serverSettings.look) {
             console.log('\x1b[31m%s\x1b[0m', 'Client and server settings are not in sync');
             compareAndProcessSettings(serverSettings);
         } else {
@@ -198,16 +198,21 @@ function compareAndProcessSettings(serverSettings) {
         processClicksForSetting(fileFormatSetting);
     }
 
-    if (serverSettings.look !== settings.look) {
+    if (serverSettings.look !== settings.look && settings.film_type !== 'bw') {
         console.log('\x1b[31m%s\x1b[0m', 'Look out of sync');
         switch(serverSettings.look) {
             case 'soft':
                 processClicksForSetting('look_soft');
+                break;
             case 'standard':
                 processClicksForSetting('look_standard');
+                break;
             case 'rich':
                 processClicksForSetting('look_rich');
+                break;
         }
+    } else {
+        console.log('\x1b[31m%s\x1b[0m', 'Custom looks not available for black and white film');
     }
 
     processClickQueue();
@@ -251,6 +256,20 @@ function requestScreenshot() {
     client.write(command + '<END_OF_JSON>');
 }
 
+function scan(isScanning) {
+    if (!isScanning) {
+        addClick(clickLocations.start_scan_btn[0], clickLocations.start_scan_btn[1]);
+        const command = JSON.stringify({ type: 'scan' });
+        console.log(`Starting scan...`);  // Debug log
+        client.write(command + '<END_OF_JSON>');
+    } else {
+        addClick(clickLocations.cancel_scan_btn[0], clickLocations.cancel_scan_btn[1]);
+        const command = JSON.stringify({ type: 'cancelscan' });
+        console.log(`Ending scan...`);  // Debug log
+        client.write(command + '<END_OF_JSON>');
+    }
+}
+
 function handleCommand(command) {
     switch (command) {
         case 'sync':
@@ -271,10 +290,10 @@ function handleCommand(command) {
             break;
         case 'start':
         case 'scan':
-            //Click start button on VM
-            addClick(clickLocations.start_button[0], clickLocations.start_button[1]);
-            //Check if film has been inserted
-            isScanning = true;
+            scan(1);
+            break;
+        case 'cancelscan':
+            scan(0);
             input();
             break;
         case '?':
@@ -298,8 +317,11 @@ function handleCommand(command) {
             rl.question('Enter film type (colour/bw): ', (film_type) => {
                 rl.question('Enter border (0/1): ', (border) => {
                     rl.question('Enter file format (JPEG/TIFF): ', (file_format) => {
-                        settings = { film_type: film_type, look: settings.look, border: parseInt(border), file_format: file_format };
-                        input(); // Prompt for next command
+                        rl.question('Enter look (soft/standard/rich): ', (look) => {
+                            settings = { film_type: film_type, look: look, border: parseInt(border), file_format: file_format };
+                            input(); // Prompt for next command
+                        });
+
                     });
                 });
             });
