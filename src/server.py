@@ -129,12 +129,13 @@ def send_settings(client_socket):
     client_socket.sendall(settings_json.encode('utf-8') + b'<END_OF_JSON>')
 
 def scan():
-    screenshot = take_screenshot()
-    insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99)
-    while insert_film_dialogue :
-        print("Film Insert Dialogue Found")
-        time.sleep(2)
-        if insert_film_dialogue == False :
+    while True:
+        screenshot = take_screenshot()
+        insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99)
+        if insert_film_dialogue:
+            print("Film Insert Dialogue Found")
+            time.sleep(1)
+        else:
             print("Screen Changed")
             return
         
