@@ -130,7 +130,7 @@ def send_settings(client_socket):
 
     client_socket.sendall(settings_json.encode('utf-8') + b'<END_OF_JSON>')
 
-def scan():
+def scan(is_scanning):
     screenshot = take_screenshot()
     while is_scanning:
         print("Scanning")
@@ -157,7 +157,7 @@ def process_command(command, client_socket):
         
     elif command['type'] == 'scan':
         is_scanning = True
-        scan()
+        scan(is_scanning)
         
     elif command['type'] == 'cancelscan':
         is_scanning = False

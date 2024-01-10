@@ -257,7 +257,7 @@ function requestScreenshot() {
 }
 
 function scan(isScanning) {
-    if (!isScanning) {
+    if (isScanning) {
         addClick(clickLocations.start_scan_btn[0], clickLocations.start_scan_btn[1]);
         const command = JSON.stringify({ type: 'scan' });
         console.log(`Starting scan...`);  // Debug log
