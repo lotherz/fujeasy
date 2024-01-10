@@ -130,12 +130,24 @@ def send_settings(client_socket):
 
     client_socket.sendall(settings_json.encode('utf-8') + b'<END_OF_JSON>')
 
-def scan(is_scanning):
+def scan():
     screenshot = take_screenshot()
+    is_scanning = True
     while is_scanning:
-        print("Scanning")
-        time.sleep(1)
-        #if compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99):
+        #check for film insert dialogue
+        if compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99) :
+            print("Film Insert Dialogue Found")
+            time.sleep(1)
+        else:
+            print("Film Inserted Dialogue Not found")
+            is_scanning = False
+            return
+   
+    
+    #while is_scanning:
+       # print("Scanning")
+        #time.sleep(1)
+        #:
          #   print("Film Insert Dialogue Found")
           #  return
         #else :
@@ -157,7 +169,7 @@ def process_command(command, client_socket):
         
     elif command['type'] == 'scan':
         is_scanning = True
-        scan(is_scanning)
+        scan()
         
     elif command['type'] == 'cancelscan':
         is_scanning = False
