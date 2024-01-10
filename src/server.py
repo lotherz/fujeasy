@@ -137,11 +137,13 @@ def scan():
         #check for film insert dialogue
         if compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99) :
             print("Film Insert Dialogue Found")
-            time.sleep(1)
         else:
             print("Film Inserted Dialogue Not found")
             is_scanning = False
             return
+        
+        time.sleep(1)
+
    
     
     #while is_scanning:
