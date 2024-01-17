@@ -13,7 +13,6 @@ const wss = new WebSocket.Server({ server });
 const port = 3000;
 let clickQueue = [];
 let isProcessingClicks = false;
-let isScanning = false;
 let accumulatedData = Buffer.alloc(0);
 
 let settings = {
