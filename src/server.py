@@ -172,6 +172,10 @@ def scan(client_socket):
             yield from asyncio.sleep(2)
         elif order_finish:
             communicate_state("Incomplete order", client_socket)
+            yield from asyncio.sleep(2)
+        else:
+            communicate_state("Processing...", client_socket)
+            yield from asyncio.sleep(2)
     
 @asyncio.coroutine
 def process_command(command, client_socket):
