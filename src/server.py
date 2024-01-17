@@ -167,7 +167,7 @@ def process_command(command, client_socket):
                 scan_task = None
 
     except Exception as e:
-        print(f"Error in process_command: {e}")
+        print("Error in process_command:, ", e)
 
 
 
