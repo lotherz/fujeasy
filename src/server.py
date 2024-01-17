@@ -62,7 +62,8 @@ def get_look():
     return "standard"
 
 def derive_settings():
-    global screenshot = asyncio.async(take_screenshot())
+    global screenshot 
+    screenshot = asyncio.async(take_screenshot())
     threshold = 0.99
     settings = {
         "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], monitored_regions["film_type"], threshold) else "bw",
