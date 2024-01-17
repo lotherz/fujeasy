@@ -94,14 +94,16 @@ def compare_with_reference(screenshot_data, reference_image_path, region, thresh
 
 @asyncio.coroutine
 def take_screenshot():
-    global screenshot = pyautogui.screenshot()
+    global screenshot 
+    screenshot = pyautogui.screenshot()
     img_byte_arr = io.BytesIO()
     screenshot.save(img_byte_arr, format='PNG')
     return img_byte_arr.getvalue()
 
 @asyncio.coroutine
 def take_screenshot_and_display():
-    global screenshot = pyautogui.screenshot()
+    global screenshot
+    screenshot = pyautogui.screenshot()
     screenshot.show()  # Display the screenshot using the default image viewer
 
     img_byte_arr = io.BytesIO()
@@ -110,7 +112,8 @@ def take_screenshot_and_display():
 
 @asyncio.coroutine
 def send_screenshot(client_socket):
-    global screenshot = asyncio.async(take_screenshot())
+    global screenshot 
+    screenshot = asyncio.async(take_screenshot())
     size = len(img_data)
     print('Screenshot Taken / Size: ' + str(size) + ' bytes')
 
@@ -141,7 +144,8 @@ def send_settings(client_socket):
 @asyncio.coroutine
 def scan():
     while True:
-        global screenshot = asyncio.async(take_screenshot())
+        global screenshot
+        screenshot = asyncio.async(take_screenshot())
         
         insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99)
         dark_correction = compare_with_reference(screenshot, reference_images["dark_correction"], monitored_regions["dark_correction"], 0.99)
