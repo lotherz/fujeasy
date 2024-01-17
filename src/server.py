@@ -38,7 +38,7 @@ def get_look():
     
     time.sleep(1) # Introduce a delay to allow the UI to update
 
-    screenshot = take_screenshot()
+    screenshot = asyncio.async(take_screenshot())
     
     looks = {
         "soft": reference_images["look_soft"],
@@ -61,7 +61,7 @@ def get_look():
     return "standard"
 
 def derive_settings():
-    screenshot = take_screenshot()
+    screenshot = asyncio.async(take_screenshot())
     threshold = 0.99
     settings = {
         "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], monitored_regions["film_type"], threshold) else "bw",
@@ -140,7 +140,7 @@ def send_settings(client_socket):
 @asyncio.coroutine
 def scan():
     while True:
-        screenshot = take_screenshot()
+        screenshot = asyncio.async(take_screenshot())
         
         insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99)
         dark_correction = compare_with_reference(screenshot, reference_images["dark_correction"], monitored_regions["dark_correction"], 0.99)
