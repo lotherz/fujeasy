@@ -137,36 +137,41 @@ def send_settings(client_socket):
     client_socket.sendall(header)  # Send JSON header
 
     client_socket.sendall(settings_json.encode('utf-8') + b'<END_OF_JSON>')
+    
+def communicate_state(state, client_socket)
+    status_message = json.dumps({"status": state})
+    client_socket.sendall(status_message.encode('utf-8') + b'<END_OF_JSON>')
+    print(state)
 
 @asyncio.coroutine
 def scan(client_socket):
     while True:
         screenshot = take_screenshot()
         
-        insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99)
-        dark_correction = compare_with_reference(screenshot, reference_images["dark_correction"], monitored_regions["dark_correction"], 0.99)
-        film_position_dialogue = compare_with_reference(screenshot, reference_images["film_position_dialogue"], monitored_regions["film_position_dialogue"], 0.99)
-        barcode_dialogue = compare_with_reference(screenshot, reference_images["barcode_dialogue"], monitored_regions["barcode_dialogue"], 0.99),
-        order_finish = compare_with_reference(screenshot, reference_images["order_finish"], monitored_regions["order_finish"], 0.99)
+        tolerance = 0.99
+        
+        insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], tolerance)
+        dark_correction = compare_with_reference(screenshot, reference_images["dark_correction"], monitored_regions["dark_correction"], tolerance)
+        film_position_dialogue = compare_with_reference(screenshot, reference_images["film_position_dialogue"], monitored_regions["film_position_dialogue"], tolerance)
+        barcode_dialogue = compare_with_reference(screenshot, reference_images["barcode_dialogue"], monitored_regions["barcode_dialogue"], tolerance),
+        order_finish = compare_with_reference(screenshot, reference_images["order_finish"], monitored_regions["order_finish"], tolerance)
 
         if insert_film_dialogue:
-            status_message = json.dumps({"status": "Awaiting Film Insertion"})
-            client_socket.sendall(status_message.encode('utf-8') + b'<END_OF_JSON>')
-            print("Awaiting Film Insertion / Cancel Scan")
+            communicate_state("Awaiting Film Insertion", client_socket)
             yield from asyncio.sleep(2)
         elif dark_correction:
-            print("Awaiting Dark Correction")
+            communicate_state("Awaiting Dark Correction", client_socket)
             yield from asyncio.sleep(2)
         elif film_position_dialogue:
-            print("Accepted film position")
+            communicate_state("Accepted film position", client_socket)
             pyautogui.click(575, 500)
             yield from asyncio.sleep(2)
         elif barcode_dialogue:
-            print("Barcode dialogue detected, starting scan")
+            communicate_state("Barcode dialogue detected, starting scan", client_socket)
             pyautogui.click(575, 420)
             yield from asyncio.sleep(2)
         elif order_finish:
-            print("Incomplete roll")
+            communicate_state("Incomplete order", client_socket)
     
 @asyncio.coroutine
 def process_command(command, client_socket):

@@ -78,7 +78,7 @@ client.on('data', (data) => {
             const statusData = accumulatedData.slice(statusStartIndex, statusEndIndex).toString();
             try {
                 const statusObject = JSON.parse(statusData);
-                console.log('Status update from server:', statusObject.status);
+                console.log('Server status: ', statusObject.status);
             } catch (e) {
                 console.error('Error parsing status JSON:', e);
             }
