@@ -16,7 +16,7 @@ reference_images = {
     "look_standard": "//Mac/Home/Documents/fujeasy/public/screenshots/look_standard_4.png",
     "look_rich": "//Mac/Home/Documents/fujeasy/public/screenshots/look_rich_5.png",
     "film_insert_dialogue": "//Mac/Home/Documents/fujeasy/public/screenshots/film_insert_dialogue.png",
-    "film_position_dialogue": "//Mac/Home/Documents/fujeasy/public/screenshots/film_position_dialogue.png",
+    "film_position_dialogue": "//Mac/Home/Documents/fujeasy/public/screenshots/film_position.png",
     "barcode_dialogue": "//Mac/Home/Documents/fujeasy/public/screenshots/barcode_dialogue.png",
     "dark_correction": "//Mac/Home/Documents/fujeasy/public/screenshots/dark_correction.png"
 }
