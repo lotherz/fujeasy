@@ -90,7 +90,7 @@ def compare_with_reference(screenshot_data, reference_image_path, region, thresh
     similarity = cv2.matchTemplate(region_of_interest, reference_image, cv2.TM_CCORR_NORMED)
     _, max_val, _, _ = cv2.minMaxLoc(similarity)
 
-    print("Comparing with " + reference_image_path + ", similarity score: " + str(max_val))
+    #print("Comparing with " + reference_image_path + ", similarity score: " + str(max_val))
 
     return max_val >= threshold
 
@@ -153,7 +153,7 @@ def scan(client_socket):
         insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], tolerance)
         dark_correction = compare_with_reference(screenshot, reference_images["dark_correction"], monitored_regions["dark_correction"], tolerance)
         film_position_dialogue = compare_with_reference(screenshot, reference_images["film_position_dialogue"], monitored_regions["film_position_dialogue"], tolerance)
-        barcode_dialogue = compare_with_reference(screenshot, reference_images["barcode_dialogue"], monitored_regions["barcode_dialogue"], tolerance),
+        barcode_dialogue = compare_with_reference(screenshot, reference_images["barcode_dialogue"], monitored_regions["barcode_dialogue"], tolerance)
         order_finish = compare_with_reference(screenshot, reference_images["order_finish"], monitored_regions["order_finish"], tolerance)
 
         if insert_film_dialogue:
