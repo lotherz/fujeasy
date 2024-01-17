@@ -15,7 +15,10 @@ reference_images = {
     "look_soft": "//Mac/Home/Documents/fujeasy/public/screenshots/look_soft_3.png",
     "look_standard": "//Mac/Home/Documents/fujeasy/public/screenshots/look_standard_4.png",
     "look_rich": "//Mac/Home/Documents/fujeasy/public/screenshots/look_rich_5.png",
-    "film_insert_dialogue": "//Mac/Home/Documents/fujeasy/public/screenshots/film_insert_dialogue.png"
+    "film_insert_dialogue": "//Mac/Home/Documents/fujeasy/public/screenshots/film_insert_dialogue.png",
+    "film_position_dialogue": "//Mac/Home/Documents/fujeasy/public/screenshots/film_position_dialogue.png",
+    "barcode_dialogue": "//Mac/Home/Documents/fujeasy/public/screenshots/barcode_dialogue.png",
+    "dark_correction": "//Mac/Home/Documents/fujeasy/public/screenshots/dark_correction.png"
 }
 
 monitored_regions = {
@@ -24,6 +27,9 @@ monitored_regions = {
     "file_format":              (386, 376, 116, 67), 
     "look_dropdown":            (365, 294, 7, 10),
     "film_insert_dialogue":     (171, 206, 458, 189),
+    "film_position_dialogue":   (145, 445, 510, 88),
+    "barcode_dialogue":         (160, 159, 480, 282),
+    "dark_correction":          (160, 159, 480, 282)
     #                           (x-coordinate, y-coordinate, width, height)
 }
 
@@ -133,13 +139,29 @@ def send_settings(client_socket):
 @asyncio.coroutine
 def scan():
     while True:
-        print("Awaiting Film Insertion / Cancel Scan")
         screenshot = take_screenshot()
+        
         insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99)
+        dark_correction = compare_with_reference(screenshot, reference_images["dark_correction"], monitored_regions["dark_correction"], 0.99)
+        film_position_dialogue = compare_with_reference(screenshot, reference_images["film_position_dialogue"], monitored_regions["film_position_dialogue"], 0.99)
+        barcode_dialogue = compare_with_reference(screenshot, reference_images["barcode_dialogue"], monitored_regions["barcode_dialogue"], 0.99)
+
         if insert_film_dialogue:
-            yield from asyncio.sleep(1)  # Non-blocking sleep
-        else:
-            break
+            print("Awaiting Film Insertion / Cancel Scan")
+            yield from asyncio.sleep(2)
+        elif dark_correction:
+            print("Awaiting Dark Correction / Cancel Scan")
+            yield from asyncio.sleep(2)
+        elif film_position_dialogue:
+            print("Accepted film position")
+            pyautogui.click(575, 500)
+            yield from asyncio.sleep(2)
+        elif barcode_dialogue:
+            print("Barcode dialogue detected, starting scan")
+            pyautogui.click(575, 420)
+            yield from asyncio.sleep(2)
+                
+        break
     print("Scan Cancelled")
     
 
