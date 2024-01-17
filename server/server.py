@@ -8,21 +8,19 @@ import numpy as np
 from PIL import Image
 import asyncio
 
-file_path = "//Mac/Home/Documents/fujeasy/server/screenshots"
-
 reference_images = {
-    "film_type": file_path + "/film_type_true.png",
-    "border": file_path + "/border_true.png",
-    "file_format": file_path + "/file_format_true.png",
-    "look_soft": file_path + "/look_soft_3.png",
-    "look_standard": file_path + "/look_standard_4.png",
-    "look_rich": file_path + "/look_rich_5.png",
-    "film_insert_dialogue": file_path + "/film_insert_dialogue.png",
-    "film_position_dialogue": file_path + "/film_position.png",
-    "barcode_dialogue": file_path + "/barcode_dialogue.png",
-    "dark_correction": file_path + "/dark_correction.png",
-    "order_finish": file_path + "/order_finish.png",
-    "film_reversed": file_path + "/film_reversed.png"
+    "film_type": "//Mac/Home/Documents/fujeasy/public/screenshots/film_type_true.png",
+    "border": "//Mac/Home/Documents/fujeasy/public/screenshots/border_true.png",
+    "file_format": "//Mac/Home/Documents/fujeasy/public/screenshots/file_format_true.png",
+    "look_soft": "//Mac/Home/Documents/fujeasy/public/screenshots/look_soft_3.png",
+    "look_standard": "//Mac/Home/Documents/fujeasy/public/screenshots/look_standard_4.png",
+    "look_rich": "//Mac/Home/Documents/fujeasy/public/screenshots/look_rich_5.png",
+    "film_insert_dialogue": "//Mac/Home/Documents/fujeasy/public/screenshots/film_insert_dialogue.png",
+    "film_position_dialogue": "//Mac/Home/Documents/fujeasy/public/screenshots/film_position.png",
+    "barcode_dialogue": "//Mac/Home/Documents/fujeasy/public/screenshots/barcode_dialogue.png",
+    "dark_correction": "//Mac/Home/Documents/fujeasy/public/screenshots/dark_correction.png",
+    "order_finish": "//Mac/Home/Documents/fujeasy/public/screenshots/order_finish.png",
+    "film_reversed": "//Mac/Home/Documents/fujeasy/public/screenshots/film_reversed.png"
 }
 
 monitored_regions = {

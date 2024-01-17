@@ -52,7 +52,7 @@ const clickLocations = {
     'look_rich': [[85, 520], [400, 300], [416, 400], [550, 300]],
 };
 
-app.use(express.static('../client/public'));
+app.use(express.static('../public'));
 
 // WebSocket connection with clients
 wss.on('connection', (ws) => {
@@ -163,7 +163,7 @@ function handleImageData() {
         const imageData = accumulatedData.slice(imageDataStartIndex, imageDataEndIndex);
 
         // Write the binary data to a file
-        fs.writeFileSync('screenshots/screenshot.png', imageData, { encoding: 'binary' });
+        fs.writeFileSync('../public/screenshots/screenshot.png', imageData, { encoding: 'binary' });
         console.log('\x1b[32m%s\x1b[0m', 'Image written to file.');
 
         // Clear processed image data from buffer
