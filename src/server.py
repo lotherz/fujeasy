@@ -90,7 +90,7 @@ def compare_with_reference(screenshot_data, reference_image_path, region, thresh
     similarity = cv2.matchTemplate(region_of_interest, reference_image, cv2.TM_CCORR_NORMED)
     _, max_val, _, _ = cv2.minMaxLoc(similarity)
 
-    #print("Comparing with " + reference_image_path + ", similarity score: " + str(max_val))
+    print("Comparing with " + reference_image_path + ", similarity score: " + str(max_val))
 
     return max_val >= threshold
 
@@ -146,7 +146,7 @@ def communicate_state(state, client_socket):
 @asyncio.coroutine
 def scan(client_socket):
     while True:
-        screenshot = take_screenshot_and_display()
+        screenshot = take_screenshot()
         
         tolerance = 0.99
         
@@ -158,24 +158,24 @@ def scan(client_socket):
 
         if insert_film_dialogue:
             communicate_state("Awaiting Film Insertion", client_socket)
-            yield from asyncio.sleep(5)
+            yield from asyncio.sleep(2)
         elif dark_correction:
             communicate_state("Awaiting Dark Correction", client_socket)
-            yield from asyncio.sleep(5)
+            yield from asyncio.sleep(2)
         elif film_position_dialogue:
             communicate_state("Accepted film position", client_socket)
             pyautogui.click(575, 500)
-            yield from asyncio.sleep(5)
+            yield from asyncio.sleep(2)
         elif barcode_dialogue:
             communicate_state("Barcode dialogue detected, starting scan", client_socket)
             pyautogui.click(575, 420)
-            yield from asyncio.sleep(5)
+            yield from asyncio.sleep(2)
         elif order_finish:
             communicate_state("Incomplete order", client_socket)
-            yield from asyncio.sleep(5)
+            yield from asyncio.sleep(2)
         else:
             communicate_state("Processing...", client_socket)
-            yield from asyncio.sleep(5)
+            yield from asyncio.sleep(2)
     
 @asyncio.coroutine
 def process_command(command, client_socket):
