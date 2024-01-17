@@ -155,7 +155,13 @@ def process_command(command, client_socket):
         send_settings(client_socket)
         
     elif command['type'] == 'scan':
-        scan()
+        global scan_task
+        scan_task = asyncio.create_task(scan())
+        
+    elif command['type'] == 'cancel_scan':
+        if scan_task:
+            scan_task.cancel()
+            scan_task = None
 
 
 @asyncio.coroutine
