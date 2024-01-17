@@ -143,27 +143,33 @@ def scan():
     print("Scan Cancelled")
     
 
+@asyncio.coroutine
 def process_command(command, client_socket):
-    print("Received command: " + str(command))
-    if command['type'] == 'click':
-        pyautogui.click(command['x'], command['y'])
-        print("Clicking at: " + str(command['x']) + ", " + str(command['y']))
+    try:
+        print("Received command: " + str(command))
+        if command['type'] == 'click':
+            pyautogui.click(command['x'], command['y'])
+            print("Clicking at: " + str(command['x']) + ", " + str(command['y']))
 
-    elif command['type'] == 'screenshot':
-        global screenshot_task
-        screenshot_task = asyncio.create_task(send_screenshot(client_socket))
+        elif command['type'] == 'screenshot':
+            global screenshot_task
+            screenshot_task = asyncio.create_task(send_screenshot(client_socket))
 
-    elif command['type'] == 'get_settings':
-        send_settings(client_socket)
+        elif command['type'] == 'get_settings':
+            yield from send_settings(client_socket)
         
-    elif command['type'] == 'scan':
-        global scan_task
-        scan_task = asyncio.create_task(scan())
+        elif command['type'] == 'scan':
+            global scan_task
+            scan_task = asyncio.create_task(scan())
         
-    elif command['type'] == 'cancel_scan':
-        if scan_task:
-            scan_task.cancel()
-            scan_task = None
+        elif command['type'] == 'cancel_scan':
+            if scan_task:
+                scan_task.cancel()
+                scan_task = None
+
+    except Exception as e:
+        print("Error in process_command: ", e)
+
 
 
 @asyncio.coroutine
