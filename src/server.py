@@ -55,7 +55,6 @@ def get_look():
     return "standard"
 
 def derive_settings():
-
     screenshot = take_screenshot()
     threshold = 0.99
     settings = {
@@ -120,6 +119,7 @@ def send_screenshot(client_socket):
 
     print("Screenshot Sent")
 
+@asyncio.coroutine
 def send_settings(client_socket):
     settings = derive_settings()
     print(settings)
@@ -154,8 +154,11 @@ def process_command(command, client_socket):
         elif command['type'] == 'screenshot':
             global screenshot_task
             screenshot_task = asyncio.async(send_screenshot(client_socket))
+            
         elif command['type'] == 'get_settings':
-            yield from send_settings(client_socket)
+            #yield from send_settings(client_socket)
+            global settings_task
+            settings_task = asyncio.async(send_settings(client_socket))
         
         elif command['type'] == 'scan':
             global scan_task
@@ -165,6 +168,10 @@ def process_command(command, client_socket):
             if scan_task:
                 scan_task.cancel()
                 scan_task = None
+
+    except Exception as e:
+        print("Error in process_command:, ", e)
+
 
 @asyncio.coroutine
 def handle_client(client_socket):
@@ -177,14 +184,12 @@ def handle_client(client_socket):
                 break
 
             buffer += data.decode('utf-8')
-            print("Received data: ", data.decode('utf-8'))
 
             if "<END_OF_JSON>" in buffer:
                 parts = buffer.split("<END_OF_JSON>")
                 for part in parts[:-1]:
                     try:
                         command = json.loads(part)
-                        print("Processing command: ", command)
                         yield from process_command(command, client_socket)
                     except ValueError as e:
                         print("Error processing JSON data: ", e)
