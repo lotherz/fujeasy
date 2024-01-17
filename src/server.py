@@ -148,7 +148,7 @@ def scan(client_socket):
     while True:
         screenshot = take_screenshot()
         
-        tolerance = 0.99
+        tolerance = 0.999
         
         insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], tolerance)
         dark_correction = compare_with_reference(screenshot, reference_images["dark_correction"], monitored_regions["dark_correction"], tolerance)
