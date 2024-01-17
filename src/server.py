@@ -38,7 +38,8 @@ def get_look():
     
     time.sleep(1) # Introduce a delay to allow the UI to update
 
-    global screenshot = asyncio.async(take_screenshot())
+    global screenshot 
+    screenshot = asyncio.async(take_screenshot())
     
     looks = {
         "soft": reference_images["look_soft"],
