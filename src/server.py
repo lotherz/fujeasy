@@ -145,37 +145,51 @@ def communicate_state(state, client_socket):
 
 @asyncio.coroutine
 def scan(client_socket):
-    while True:
-        screenshot = take_screenshot()
-        
-        tolerance = 0.999
-        
-        insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], tolerance)
-        dark_correction = compare_with_reference(screenshot, reference_images["dark_correction"], monitored_regions["dark_correction"], tolerance)
-        film_position_dialogue = compare_with_reference(screenshot, reference_images["film_position_dialogue"], monitored_regions["film_position_dialogue"], tolerance)
-        barcode_dialogue = compare_with_reference(screenshot, reference_images["barcode_dialogue"], monitored_regions["barcode_dialogue"], tolerance)
-        order_finish = compare_with_reference(screenshot, reference_images["order_finish"], monitored_regions["order_finish"], tolerance)
+    global scan_task
+    try:
+        while True:
+            screenshot = take_screenshot()
+            
+            tolerance = 0.999
+            
+            insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], tolerance)
+            dark_correction = compare_with_reference(screenshot, reference_images["dark_correction"], monitored_regions["dark_correction"], tolerance)
+            film_position_dialogue = compare_with_reference(screenshot, reference_images["film_position_dialogue"], monitored_regions["film_position_dialogue"], tolerance)
+            barcode_dialogue = compare_with_reference(screenshot, reference_images["barcode_dialogue"], monitored_regions["barcode_dialogue"], tolerance)
+            order_finish = compare_with_reference(screenshot, reference_images["order_finish"], monitored_regions["order_finish"], tolerance)
+            
+            if scan_task.cancelled():
+                    communicate_state("Scan Cancelled", client_socket)
+                    break
+            
+            if insert_film_dialogue:
+                communicate_state("Awaiting Film Insertion", client_socket)
+                yield from asyncio.sleep(2)
+            elif dark_correction:
+                communicate_state("Awaiting Dark Correction", client_socket)
+                yield from asyncio.sleep(2)
+            elif film_position_dialogue:
+                communicate_state("Accepted film position", client_socket)
+                pyautogui.click(575, 500)
+                yield from asyncio.sleep(2)
+            elif barcode_dialogue:
+                communicate_state("Barcode dialogue detected, starting scan", client_socket)
+                pyautogui.click(575, 420)
+                yield from asyncio.sleep(2)
+            elif order_finish:
+                communicate_state("Incomplete order, insert more film to continue", client_socket)
+                yield from asyncio.sleep(2)
+            else:
+                communicate_state("Processing...", client_socket)
+                yield from asyncio.sleep(2)
+                
+    except asyncio.CancelledError :
+            communicate_state("Scan Cancelled", client_socket)
+            # Perform any necessary cleanup here
+    finally:
+        scan_task = None  # Reset scan_task after cancellation or completion
 
-        if insert_film_dialogue:
-            communicate_state("Awaiting Film Insertion", client_socket)
-            yield from asyncio.sleep(2)
-        elif dark_correction:
-            communicate_state("Awaiting Dark Correction", client_socket)
-            yield from asyncio.sleep(2)
-        elif film_position_dialogue:
-            communicate_state("Accepted film position", client_socket)
-            pyautogui.click(575, 500)
-            yield from asyncio.sleep(2)
-        elif barcode_dialogue:
-            communicate_state("Barcode dialogue detected, starting scan", client_socket)
-            pyautogui.click(575, 420)
-            yield from asyncio.sleep(2)
-        elif order_finish:
-            communicate_state("Incomplete order", client_socket)
-            yield from asyncio.sleep(2)
-        else:
-            communicate_state("Processing...", client_socket)
-            yield from asyncio.sleep(2)
+    
     
 @asyncio.coroutine
 def process_command(command, client_socket):
