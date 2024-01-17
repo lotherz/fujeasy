@@ -104,7 +104,7 @@ def take_screenshot_and_display():
 
     img_byte_arr = io.BytesIO()
     screenshot.save(img_byte_arr, format='PNG')
-    return img_byte_arr.getvalue(
+    return img_byte_arr.getvalue()
 
 @asyncio.coroutine
 def send_screenshot(client_socket):
