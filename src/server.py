@@ -6,6 +6,7 @@ import cv2
 import time
 import numpy as np
 from PIL import Image
+import asyncio
 
 reference_images = {
     "film_type": "//Mac/Home/Documents/fujeasy/public/screenshots/film_type_true.png",
@@ -128,13 +129,14 @@ def send_settings(client_socket):
 
     client_socket.sendall(settings_json.encode('utf-8') + b'<END_OF_JSON>')
 
+@asyncio.coroutine
 def scan():
     while True:
         print("Awaiting Film Insertion / Cancel Scan")
         screenshot = take_screenshot()
         insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99)
         if insert_film_dialogue:
-            time.sleep(1)
+            yield from asyncio.sleep(1)  # Non-blocking sleep
         else:
             break
     print("Scan Cancelled")
@@ -155,35 +157,43 @@ def process_command(command, client_socket):
     elif command['type'] == 'scan':
         scan()
 
+
+@asyncio.coroutine
+def handle_client(client_socket):
+    try:
+        buffer = ""
+        while True:
+            data = yield from loop.sock_recv(client_socket, 1024)
+            if not data:
+                break
+
+            buffer += data.decode('utf-8')
+            if "<END_OF_JSON>" in buffer:
+                complete_json, buffer = buffer.split("<END_OF_JSON>", 1)
+                try:
+                    command = json.loads(complete_json)
+                    yield from process_command(command, client_socket)  # Assume process_command is also a coroutine
+                except ValueError as e:
+                    print("Error processing JSON data: ", e)
+        client_socket.close()
+        print("Connection closed.")
+    except Exception as e:
+        print("Error handling client: ", e)
+        
+@asyncio.coroutine
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', 8080))
     server_socket.listen(5)
+    server_socket.setblocking(False)  # Important: set the socket to non-blocking
 
     while True:
-        client_socket, addr = server_socket.accept()
-        print("Connection has been established.")
+        client_socket, addr = yield from loop.sock_accept(server_socket)
+        print("Connection has been established: ", addr)
+        loop.create_task(handle_client(client_socket))  # Start a new task for each client
 
-        buffer = ""
-        while True:
-            data = client_socket.recv(1024).decode('utf-8')
-            if not data:
-                break
-
-            buffer += data
-            # Check if the delimiter is in the buffer
-            if "<END_OF_JSON>" in buffer:
-                # Split the buffer at the delimiter
-                complete_json, buffer = buffer.split("<END_OF_JSON>", 1)
-                try:
-                    command = json.loads(complete_json)
-                    process_command(command, client_socket)
-                except ValueError as e:
-                    print("Error processing JSON data: ", e)
-                    # You might want to handle this error differently
-
-        client_socket.close()
-        print("Connection closed.")
+# Start the asyncio event loop
+loop = asyncio.get_event_loop()
+loop.run_until_complete(start_server())
 
 
-start_server()
