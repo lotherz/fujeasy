@@ -232,32 +232,7 @@ function processClickQueue() {
             isProcessingClicks = false;
             input(); // Ready to accept the next command
         }
-        return;@asyncio.coroutine
-def handle_client(client_socket):
-    try:
-        buffer = ""
-        while True:
-            data = yield from loop.sock_recv(client_socket, 1024)
-            if not data:
-                break
-
-            buffer += data.decode('utf-8')
-            if "<END_OF_JSON>" in buffer:
-                parts = buffer.split("<END_OF_JSON>", 1)
-                if len(parts) == 2:
-                    complete_json, buffer = parts
-                    try:
-                        command = json.loads(complete_json)
-                        yield from process_command(command, client_socket)
-                    except ValueError as e:
-                        print("Error processing JSON data: ", e)
-                else:
-                    print("Invalid data format received.")
-        client_socket.close()
-        print("Connection closed.")
-    except Exception as e:
-        print("Error handling client: ", e)
-
+        return;
     }
 
     // Processing clicks
