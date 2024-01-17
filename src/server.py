@@ -191,16 +191,25 @@ def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', 8080))
     server_socket.listen(5)
-    server_socket.setblocking(False)  # Important: set the socket to non-blocking
+    server_socket.setblocking(False)  # Set the socket to non-blocking
 
     while True:
-        client_socket, addr = yield from loop.sock_accept(server_socket)
-        print("Connection has been established: ", addr)
-        asyncio.async(handle_client(client_socket))  # Start a new task for each client
+        try:
+            client_socket, addr = yield from loop.sock_accept(server_socket)
+            if client_socket is not None:
+                print("Connection has been established: ", addr)
+                asyncio.async(handle_client(client_socket))  # Start a new task for each client
+            else:
+                print("No client socket received.")
+                yield from asyncio.sleep(1)  # Wait a bit before trying again
+        except Exception as e:
+            print("Error accepting client connection: ", e)
+            yield from asyncio.sleep(1)  # Wait a bit before trying again
 
 # Start the asyncio event loop
 loop = asyncio.get_event_loop()
 loop.run_until_complete(start_server())
+
 
 
 
