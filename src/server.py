@@ -160,11 +160,7 @@ def scan():
             print("Barcode dialogue detected, starting scan")
             pyautogui.click(575, 420)
             yield from asyncio.sleep(2)
-                
-        break
-    print("Scan Cancelled")
     
-
 @asyncio.coroutine
 def process_command(command, client_socket):
     try:
