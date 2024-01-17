@@ -30,7 +30,7 @@ monitored_regions = {
     "film_insert_dialogue":     (171, 206, 458, 189),
     "film_position_dialogue":   (145, 445, 510, 88),
     "barcode_dialogue":         (189, 202, 214, 95),
-    "dark_correction":          (160, 159, 480, 282),
+    "dark_correction":          (189, 202, 214, 95),
     "order_finish":             (451, 501, 114, 31)
     #                           (x-coordinate, y-coordinate, width, height)
 }
