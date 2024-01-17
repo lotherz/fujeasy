@@ -101,6 +101,7 @@ def take_screenshot_and_display():
     screenshot.save(img_byte_arr, format='PNG')
     return img_byte_arr.getvalue()
 
+@asyncio.coroutine
 def send_screenshot(client_socket):
     img_data = take_screenshot()
     size = len(img_data)
@@ -149,7 +150,8 @@ def process_command(command, client_socket):
         print("Clicking at: " + str(command['x']) + ", " + str(command['y']))
 
     elif command['type'] == 'screenshot':
-        send_screenshot(client_socket)
+        global screenshot_task
+        screenshot_task = asyncio.create_task(send_screenshot(client_socket))
 
     elif command['type'] == 'get_settings':
         send_settings(client_socket)
