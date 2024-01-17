@@ -18,7 +18,8 @@ reference_images = {
     "film_insert_dialogue": "//Mac/Home/Documents/fujeasy/public/screenshots/film_insert_dialogue.png",
     "film_position_dialogue": "//Mac/Home/Documents/fujeasy/public/screenshots/film_position.png",
     "barcode_dialogue": "//Mac/Home/Documents/fujeasy/public/screenshots/barcode_dialogue.png",
-    "dark_correction": "//Mac/Home/Documents/fujeasy/public/screenshots/dark_correction.png"
+    "dark_correction": "//Mac/Home/Documents/fujeasy/public/screenshots/dark_correction.png",
+    "order_finish": "//Mac/Home/Documents/fujeasy/public/screenshots/order_finish.png"
 }
 
 monitored_regions = {
@@ -29,7 +30,8 @@ monitored_regions = {
     "film_insert_dialogue":     (171, 206, 458, 189),
     "film_position_dialogue":   (145, 445, 510, 88),
     "barcode_dialogue":         (160, 159, 480, 282),
-    "dark_correction":          (160, 159, 480, 282)
+    "dark_correction":          (160, 159, 480, 282),
+    "order_finish":             (451, 501, 114, 31)
     #                           (x-coordinate, y-coordinate, width, height)
 }
 
@@ -137,20 +139,23 @@ def send_settings(client_socket):
     client_socket.sendall(settings_json.encode('utf-8') + b'<END_OF_JSON>')
 
 @asyncio.coroutine
-def scan():
+def scan(client_socket):
     while True:
         screenshot = take_screenshot()
         
         insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99)
         dark_correction = compare_with_reference(screenshot, reference_images["dark_correction"], monitored_regions["dark_correction"], 0.99)
         film_position_dialogue = compare_with_reference(screenshot, reference_images["film_position_dialogue"], monitored_regions["film_position_dialogue"], 0.99)
-        barcode_dialogue = compare_with_reference(screenshot, reference_images["barcode_dialogue"], monitored_regions["barcode_dialogue"], 0.99)
+        barcode_dialogue = compare_with_reference(screenshot, reference_images["barcode_dialogue"], monitored_regions["barcode_dialogue"], 0.99),
+        order_finish = compare_with_reference(screenshot, reference_images["order_finish"], monitored_regions["order_finish"], 0.99)
 
         if insert_film_dialogue:
+            status_message = json.dumps({"status": "Awaiting Film Insertion"})
+            client_socket.sendall(status_message.encode('utf-8') + b'<END_OF_JSON>')
             print("Awaiting Film Insertion / Cancel Scan")
             yield from asyncio.sleep(2)
         elif dark_correction:
-            print("Awaiting Dark Correction / Cancel Scan")
+            print("Awaiting Dark Correction")
             yield from asyncio.sleep(2)
         elif film_position_dialogue:
             print("Accepted film position")
@@ -160,6 +165,8 @@ def scan():
             print("Barcode dialogue detected, starting scan")
             pyautogui.click(575, 420)
             yield from asyncio.sleep(2)
+        elif order_finish:
+            print("Incomplete roll")
     
 @asyncio.coroutine
 def process_command(command, client_socket):
@@ -180,7 +187,7 @@ def process_command(command, client_socket):
         
         elif command['type'] == 'scan':
             global scan_task
-            scan_task = asyncio.async(scan())
+            scan_task = asyncio.async(scan(client_socket))
         
         elif command['type'] == 'cancel_scan':
             if scan_task:

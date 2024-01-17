@@ -65,30 +65,54 @@ client.on('error', (err) => console.error('\x1b[31m%s\x1b[0m', 'Socket error:', 
 server.listen(port, () => console.log('\x1b[37m%s\x1b[0m', `Server listening at http://localhost:${port}`));
 
 client.on('data', (data) => {
-    //console.log(`Received new data chunk of length: ${data.length}`);
-
     // Concatenate new data to the accumulated buffer
     accumulatedData = Buffer.concat([accumulatedData, data]);
 
-    // Check for the JSON header and its delimiter
-    const jsonHeaderIndex = accumulatedData.indexOf('JSON\n');
-    const jsonEndIndex = accumulatedData.indexOf('<END_OF_JSON>');
+    // Process status messages
+    while(true) {
+        const statusStartIndex = accumulatedData.indexOf('{"status":');
+        const statusEndIndex = accumulatedData.indexOf('<END_OF_JSON>');
 
-    if (jsonHeaderIndex !== -1 && jsonEndIndex > jsonHeaderIndex) {
-        // Ensure that the end of the JSON content is after the header
-        //console.log("Complete JSON message found in buffer, processing as JSON data...");
-        handleJsonData(jsonHeaderIndex, jsonEndIndex);
+        if (statusStartIndex !== -1 && statusEndIndex > statusStartIndex) {
+            // Extract the status message
+            const statusData = accumulatedData.slice(statusStartIndex, statusEndIndex).toString();
+            try {
+                const statusObject = JSON.parse(statusData);
+                console.log('Status update from server:', statusObject.status);
+            } catch (e) {
+                console.error('Error parsing status JSON:', e);
+            }
+            accumulatedData = accumulatedData.slice(statusEndIndex + '<END_OF_JSON>'.length);
+        } else {
+            break; // No more complete status messages in buffer
+        }
     }
 
-    // Check for the image header and its delimiter
-    const imageHeaderIndex = accumulatedData.indexOf('IMAGE\n');
-    const imageEndIndex = accumulatedData.indexOf('<END_OF_IMAGE>');
+    // Process JSON data
+    while (true) {
+        const jsonHeaderIndex = accumulatedData.indexOf('JSON\n');
+        const jsonEndIndex = accumulatedData.indexOf('<END_OF_JSON>');
 
-    if (imageHeaderIndex !== -1 && imageEndIndex > imageHeaderIndex) {
-        // Ensure that the end of the image content is after the header
-        handleImageData(imageHeaderIndex, imageEndIndex);
+        if (jsonHeaderIndex !== -1 && jsonEndIndex > jsonHeaderIndex) {
+            handleJsonData(jsonHeaderIndex, jsonEndIndex);
+        } else {
+            break; // No more complete JSON messages in buffer
+        }
+    }
+
+    // Process image data
+    while (true) {
+        const imageHeaderIndex = accumulatedData.indexOf('IMAGE\n');
+        const imageEndIndex = accumulatedData.indexOf('<END_OF_IMAGE>');
+
+        if (imageHeaderIndex !== -1 && imageEndIndex > imageHeaderIndex) {
+            handleImageData(imageHeaderIndex, imageEndIndex);
+        } else {
+            break; // No more complete image data in buffer
+        }
     }
 });
+
 
 function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
     try {
