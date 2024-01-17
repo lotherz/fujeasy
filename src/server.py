@@ -146,7 +146,7 @@ def communicate_state(state, client_socket):
 @asyncio.coroutine
 def scan(client_socket):
     while True:
-        screenshot = take_screenshot()
+        screenshot = take_screenshot_and_display()
         
         tolerance = 0.99
         
@@ -158,24 +158,24 @@ def scan(client_socket):
 
         if insert_film_dialogue:
             communicate_state("Awaiting Film Insertion", client_socket)
-            yield from asyncio.sleep(2)
+            yield from asyncio.sleep(5)
         elif dark_correction:
             communicate_state("Awaiting Dark Correction", client_socket)
-            yield from asyncio.sleep(2)
+            yield from asyncio.sleep(5)
         elif film_position_dialogue:
             communicate_state("Accepted film position", client_socket)
             pyautogui.click(575, 500)
-            yield from asyncio.sleep(2)
+            yield from asyncio.sleep(5)
         elif barcode_dialogue:
             communicate_state("Barcode dialogue detected, starting scan", client_socket)
             pyautogui.click(575, 420)
-            yield from asyncio.sleep(2)
+            yield from asyncio.sleep(5)
         elif order_finish:
             communicate_state("Incomplete order", client_socket)
-            yield from asyncio.sleep(2)
+            yield from asyncio.sleep(5)
         else:
             communicate_state("Processing...", client_socket)
-            yield from asyncio.sleep(2)
+            yield from asyncio.sleep(5)
     
 @asyncio.coroutine
 def process_command(command, client_socket):
