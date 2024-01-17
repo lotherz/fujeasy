@@ -138,7 +138,7 @@ def send_settings(client_socket):
 
     client_socket.sendall(settings_json.encode('utf-8') + b'<END_OF_JSON>')
     
-def communicate_state(state, client_socket)
+def communicate_state(state, client_socket):
     status_message = json.dumps({"status": state})
     client_socket.sendall(status_message.encode('utf-8') + b'<END_OF_JSON>')
     print(state)
