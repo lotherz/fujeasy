@@ -196,10 +196,11 @@ def start_server():
     while True:
         client_socket, addr = yield from loop.sock_accept(server_socket)
         print("Connection has been established: ", addr)
-        loop.create_task(handle_client(client_socket))  # Start a new task for each client
+        asyncio.async(handle_client(client_socket))  # Start a new task for each client
 
 # Start the asyncio event loop
 loop = asyncio.get_event_loop()
 loop.run_until_complete(start_server())
+
 
 
