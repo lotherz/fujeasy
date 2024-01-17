@@ -92,6 +92,7 @@ def compare_with_reference(screenshot_data, reference_image_path, region, thresh
 
     return max_val >= threshold
 
+@asyncio.coroutine
 def take_screenshot():
     screenshot = pyautogui.screenshot()
     img_byte_arr = io.BytesIO()
@@ -108,7 +109,7 @@ def take_screenshot_and_display():
 
 @asyncio.coroutine
 def send_screenshot(client_socket):
-    img_data = take_screenshot()
+    img_data = asyncio.async(take_screenshot())
     size = len(img_data)
     print('Screenshot Taken / Size: ' + str(size) + ' bytes')
 
