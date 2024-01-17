@@ -173,20 +173,27 @@ def handle_client(client_socket):
         while True:
             data = yield from loop.sock_recv(client_socket, 1024)
             if not data:
+                print("No more data received.")
                 break
 
             buffer += data.decode('utf-8')
+            print("Received data: ", data.decode('utf-8'))
+
             if "<END_OF_JSON>" in buffer:
-                complete_json, buffer = buffer.split("<END_OF_JSON>", 1)
-                try:
-                    command = json.loads(complete_json)
-                    yield from process_command(command, client_socket)  # Assume process_command is also a coroutine
-                except ValueError as e:
-                    print("Error processing JSON data: ", e)
+                parts = buffer.split("<END_OF_JSON>")
+                for part in parts[:-1]:
+                    try:
+                        command = json.loads(part)
+                        print("Processing command: ", command)
+                        yield from process_command(command, client_socket)
+                    except ValueError as e:
+                        print("Error processing JSON data: ", e)
+                buffer = parts[-1]  # Retain the remaining part for the next loop iteration
         client_socket.close()
         print("Connection closed.")
     except Exception as e:
         print("Error handling client: ", e)
+
         
 @asyncio.coroutine
 def start_server():
