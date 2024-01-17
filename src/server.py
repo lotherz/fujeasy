@@ -166,12 +166,6 @@ def process_command(command, client_socket):
                 scan_task.cancel()
                 scan_task = None
 
-    except Exception as e:
-        print("Error in process_command:, ", e)
-
-
-
-
 @asyncio.coroutine
 def handle_client(client_socket):
     try:
