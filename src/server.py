@@ -38,8 +38,7 @@ def get_look():
     
     time.sleep(1) # Introduce a delay to allow the UI to update
 
-    global screenshot 
-    screenshot = asyncio.async(take_screenshot())
+    screenshot = take_screenshot()
     
     looks = {
         "soft": reference_images["look_soft"],
@@ -62,8 +61,7 @@ def get_look():
     return "standard"
 
 def derive_settings():
-    global screenshot 
-    screenshot = asyncio.async(take_screenshot())
+    screenshot = take_screenshot()
     threshold = 0.99
     settings = {
         "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], monitored_regions["film_type"], threshold) else "bw",
@@ -94,28 +92,23 @@ def compare_with_reference(screenshot_data, reference_image_path, region, thresh
 
     return max_val >= threshold
 
-@asyncio.coroutine
 def take_screenshot():
-    global screenshot 
     screenshot = pyautogui.screenshot()
     img_byte_arr = io.BytesIO()
     screenshot.save(img_byte_arr, format='PNG')
     return img_byte_arr.getvalue()
 
-@asyncio.coroutine
 def take_screenshot_and_display():
-    global screenshot
     screenshot = pyautogui.screenshot()
     screenshot.show()  # Display the screenshot using the default image viewer
 
     img_byte_arr = io.BytesIO()
     screenshot.save(img_byte_arr, format='PNG')
-    return img_byte_arr.getvalue()
+    return img_byte_arr.getvalue(
 
 @asyncio.coroutine
 def send_screenshot(client_socket):
-    global screenshot 
-    screenshot = asyncio.async(take_screenshot())
+    img_data = take_screenshot()
     size = len(img_data)
     print('Screenshot Taken / Size: ' + str(size) + ' bytes')
 
@@ -146,8 +139,7 @@ def send_settings(client_socket):
 @asyncio.coroutine
 def scan():
     while True:
-        global screenshot
-        screenshot = asyncio.async(take_screenshot())
+        screenshot = take_screenshot()
         
         insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], 0.99)
         dark_correction = compare_with_reference(screenshot, reference_images["dark_correction"], monitored_regions["dark_correction"], 0.99)
