@@ -153,14 +153,13 @@ def process_command(command, client_socket):
 
         elif command['type'] == 'screenshot':
             global screenshot_task
-            screenshot_task = asyncio.create_task(send_screenshot(client_socket))
-
+            screenshot_task = asyncio.async(send_screenshot(client_socket))
         elif command['type'] == 'get_settings':
             yield from send_settings(client_socket)
         
         elif command['type'] == 'scan':
             global scan_task
-            scan_task = asyncio.create_task(scan())
+            scan_task = asyncio.async(scan())
         
         elif command['type'] == 'cancel_scan':
             if scan_task:
@@ -168,7 +167,8 @@ def process_command(command, client_socket):
                 scan_task = None
 
     except Exception as e:
-        print("Error in process_command: ", e)
+        print(f"Error in process_command: {e}")
+
 
 
 
