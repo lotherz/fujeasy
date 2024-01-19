@@ -71,7 +71,7 @@ def derive_settings():
     threshold = 0.99
     settings = {
         "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], monitored_regions["film_type"], threshold) else "bw",
-        "border": 0 if compare_with_reference(screenshot, reference_images["border"], monitored_regions["border"], threshold) else 1,
+        "border": 0 if compare_with_reference(screenshot, reference_images["border"], monitored_regions["border"], 0.999) else 1,
         "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], monitored_regions["file_format"], threshold) else "TIFF",
         "look": get_look()
     }
