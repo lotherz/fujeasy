@@ -1,14 +1,14 @@
 const net = require('net');
 const express = require('express');
 const http = require('http');
-const WebSocket = require('ws');
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
+const bodyParser = require('body-parser');
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+app.use(bodyParser.json());
 
 const port = 3000;
 let clickQueue = [];
@@ -51,12 +51,27 @@ const clickLocations = {
     'look_rich': [[85, 520], [400, 300], [416, 400], [550, 300]],
 };
 
-app.use(express.static('../client/public'));
+app.use(express.static('../public'));
 
-// WebSocket connection with clients
-wss.on('connection', (ws) => {
-    console.log('\x1b[37m%s\x1b[0m', 'WebSocket Client connected');
-    ws.on('close', () => console.log('\x1b[31m', 'WebSocket Client disconnected'));
+// Endpoint to receive settings and commands
+app.post('/update-settings', (req, res) => {
+    const { clientSettings, command } = req.body;
+    if (clientSettings) {
+        // Update your settings logic here
+        console.log('Received settings from client:', clientSettings);
+        settings = clientSettings;
+        console.log('Client settings updated: ', settings);
+        input();
+    }
+
+    if (command) {
+        // Process command logic here
+        console.log('Received command:', command);
+        handleCommand(command);
+        input();
+    }
+
+    res.send({ message: 'Settings updated' });
 });
 
 const client = new net.Socket();
@@ -295,20 +310,13 @@ function scan(isScanning) {
 
 function handleCommand(command) {
     switch (command) {
+        case 'updateSettings':
         case 'sync':
             requestserverSettings();
             input();
             break;
         case 'clientSettings':
             console.log(settings);
-            input();
-            break;
-        case 'serverSettings':
-            if (serverSettings) {
-                console.log(serverSettings)
-            } else {
-                console.log('\x1b[31m%s\x1b[0m', 'No server settings available.');
-            }
             input();
             break;
         case 'start':
