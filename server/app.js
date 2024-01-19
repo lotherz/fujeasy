@@ -60,7 +60,6 @@ app.post('/update-settings', (req, res) => {
         // Update your settings logic here
         console.log('Received settings from client:', clientSettings);
         settings = clientSettings;
-        console.log('Client settings updated: ', settings);
         input();
     }
 
@@ -236,9 +235,16 @@ function compareAndProcessSettings(serverSettings) {
         processClicksForSetting(fileFormatSetting);
     }
 
-    if (serverSettings.look !== settings.look && settings.film_type !== 'bw') {
+    if (serverSettings.look !== settings.look) {
+
+        if (settings.film_type == 'bw') {
+            console.log('\x1b[31m%s\x1b[0m', 'Custom looks not available for black and white film');
+            input();
+            return;
+        }
+
         console.log('\x1b[31m%s\x1b[0m', 'Look out of sync');
-        switch(serverSettings.look) {
+        switch(settings.look) {
             case 'soft':
                 processClicksForSetting('look_soft');
                 break;
@@ -249,8 +255,6 @@ function compareAndProcessSettings(serverSettings) {
                 processClicksForSetting('look_rich');
                 break;
         }
-    } else {
-        console.log('\x1b[31m%s\x1b[0m', 'Custom looks not available for black and white film');
     }
 
     processClickQueue();
