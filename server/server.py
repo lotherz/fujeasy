@@ -165,7 +165,7 @@ def continuous_film_monitoring(client_socket):
             for dialogue, state in dialogues.items():
                 if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance):
                     print("{} detected.".format(dialogue.replace('_', ' ').capitalize()))
-                    communicate_state(state, client_socket)
+                    communicate_state("test", client_socket)
                     detected_state = state
                     break  # Stop checking once the first dialogue is detected
 
