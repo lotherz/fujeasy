@@ -155,17 +155,20 @@ def continuous_film_monitoring(client_socket):
             tolerance = 0.999
             detected_state = None  # Track the detected state
             dialogues = {
-                "film_insert_dialogue": "Awaiting Film Insertion",
-                "dark_correction": "Awaiting Dark Correction",
-                "film_position_dialogue": "Accepted Film Position",
-                "barcode_dialogue": "Barcode Dialogue Detected, Starting Scan",
-                "order_finish": "Incomplete Order, Insert More Film to Continue",
-                "film_reversed": "Film is Reversed, Please Flip the Film"
+                "film_insert_dialogue": ("Awaiting Film Insertion", None),
+                "dark_correction": ("Awaiting Dark Correction", None),
+                "film_position_dialogue": ("Accepted Film Position", (575, 500)),
+                "barcode_dialogue": ("Barcode Dialogue Detected, Starting Scan", (575, 420)),
+                "order_finish": ("Incomplete Order, Insert More Film to Continue", None),
+                "film_reversed": ("Film is Reversed, Please Flip the Film", (575, 420))
             }
-            for dialogue, state in dialogues.items():
+            for dialogue, (state, click_position) in dialogues.items():
                 if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance):
                     print("{} detected.".format(dialogue.replace('_', ' ').capitalize()))
                     detected_state = state
+                    # Perform the click if a click position is specified for the detected dialogue
+                    if click_position:
+                        pyautogui.click(*click_position)
                     break  # Stop checking once the first dialogue is detected
 
             if detected_state:
