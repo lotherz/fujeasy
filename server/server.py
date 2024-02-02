@@ -160,6 +160,7 @@ def continuous_film_monitoring():
             yield from asyncio.sleep(1)  # Adjust sleep duration as needed
         except Exception as e:
             print("Error in continuous monitoring: {}".format(e))
+            yield from asyncio.sleep(1)
 
 @asyncio.coroutine
 def process_command(command, client_socket):
@@ -224,7 +225,8 @@ def start_server():
     server_socket.listen(5)
     server_socket.setblocking(False)
 
-    asyncio.ensure_future(continuous_film_monitoring())  # Start continuous monitoring
+    schedule_coroutine = getattr(asyncio, "async")
+    schedule_coroutine(continuous_film_monitoring())  # Use asyncio.async for Python 3.4
 
     while True:
         try:
