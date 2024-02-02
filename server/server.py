@@ -148,7 +148,7 @@ def communicate_state(state, client_socket):
     print(state)
 
 @asyncio.coroutine
-def continuous_film_monitoring():
+def continuous_film_monitoring(client_socket):
     while True:
         try:
             screenshot = take_screenshot()
@@ -157,6 +157,7 @@ def continuous_film_monitoring():
             for dialogue in dialogues:
                 if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance):
                     print("{} detected.".format(dialogue.replace('_', ' ').capitalize()))
+                    communicate_state(dialogue, client_socket)
             yield from asyncio.sleep(1)  # Adjust sleep duration as needed
         except Exception as e:
             print("Error in continuous monitoring: {}".format(e))
@@ -226,7 +227,7 @@ def start_server():
     server_socket.setblocking(False)
 
     schedule_coroutine = getattr(asyncio, "async")
-    schedule_coroutine(continuous_film_monitoring())  # Use asyncio.async for Python 3.4
+    schedule_coroutine(continuous_film_monitoring(client_socket))  # Use asyncio.async for Python 3.4
 
     while True:
         try:
