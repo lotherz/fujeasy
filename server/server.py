@@ -39,6 +39,11 @@ monitored_regions = {
     #                           (x-coordinate, y-coordinate, width, height)
 }
 
+def communicate_state(state, client_socket):
+    status_message = json.dumps({"status": state})
+    client_socket.sendall(status_message.encode('utf-8') + b'<END_OF_JSON>')
+    print(state)
+
 def get_look():
     pyautogui.click(85, 520)  # Click on the "Custom" button
     
@@ -141,11 +146,6 @@ def send_settings(client_socket):
     client_socket.sendall(header)  # Send JSON header
 
     client_socket.sendall(settings_json.encode('utf-8') + b'<END_OF_JSON>')
-    
-def communicate_state(state, client_socket):
-    status_message = json.dumps({"status": state})
-    client_socket.sendall(status_message.encode('utf-8') + b'<END_OF_JSON>')
-    print(state)
 
 @asyncio.coroutine
 def continuous_film_monitoring(client_socket):
@@ -153,15 +153,30 @@ def continuous_film_monitoring(client_socket):
         try:
             screenshot = take_screenshot()
             tolerance = 0.999
-            dialogues = ["film_insert_dialogue", "dark_correction", "film_position_dialogue", "barcode_dialogue", "order_finish", "film_reversed"]
-            for dialogue in dialogues:
+            detected_state = None  # Track the detected state
+            dialogues = {
+                "film_insert_dialogue": "Awaiting Film Insertion",
+                "dark_correction": "Awaiting Dark Correction",
+                "film_position_dialogue": "Accepted Film Position",
+                "barcode_dialogue": "Barcode Dialogue Detected, Starting Scan",
+                "order_finish": "Incomplete Order, Insert More Film to Continue",
+                "film_reversed": "Film is Reversed, Please Flip the Film"
+            }
+            for dialogue, state in dialogues.items():
                 if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance):
                     print("{} detected.".format(dialogue.replace('_', ' ').capitalize()))
-                    communicate_state(dialogue, client_socket)
+                    communicate_state(state, client_socket)
+                    detected_state = state
+                    break  # Stop checking once the first dialogue is detected
+
+            if detected_state:
+                communicate_state(detected_state, client_socket)  # Send detected state to client
+            
             yield from asyncio.sleep(1)  # Adjust sleep duration as needed
         except Exception as e:
             print("Error in continuous monitoring: {}".format(e))
             yield from asyncio.sleep(1)
+
 
 @asyncio.coroutine
 def process_command(command, client_socket):
@@ -226,15 +241,14 @@ def start_server():
     server_socket.listen(5)
     server_socket.setblocking(False)
 
-    schedule_coroutine = getattr(asyncio, "async")
-    schedule_coroutine(continuous_film_monitoring(client_socket))  # Use asyncio.async for Python 3.4
-
     while True:
         try:
             client_socket, addr = yield from loop.sock_accept(server_socket)
             if client_socket is not None:
                 print("Connection has been established: {}".format(addr))
                 asyncio.ensure_future(handle_client(client_socket))
+                schedule_coroutine = getattr(asyncio, "async")
+                schedule_coroutine(continuous_film_monitoring(client_socket))  # Use asyncio.async for Python 3.4
             else:
                 print("No client socket received.")
                 yield from asyncio.sleep(1)
