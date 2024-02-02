@@ -279,6 +279,9 @@ def start_server():
 loop = asyncio.get_event_loop()
 loop.run_until_complete(start_server())
 
+global scan_task
+scan_task = asyncio.async(scan(client_socket))
+
 
 
 

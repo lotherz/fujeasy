@@ -10,7 +10,7 @@
     <div id="wrapper">
         <div id="settings">
             <h1>Settings</h1>
-            <form>
+            <form id="settingsForm">
                 <section>
                   <div>
                     <h3>Film type</h3>
@@ -39,6 +39,24 @@
                 </section>
               </form>
         </div>
+        <div id="loading" style="display: none;">
+            <h1>Loading...</h1>
+        </div>
+        <div id="insertfilm" style="display: none;">
+            <h1>Insert film</h1>
+            <div>
+                <p>Insert your film into the scanner.</p>
+                <p>Make sure the film is inserted correctly.</p>
+            </div>
+            <div>
+              <button type="submit" id="continue" name="backToSettings" value="back">Back</button>
+            </div>
+        </div>
+        <div id="scanning" style="display: none;">
+            <h1>Scanning...</h1>
+            <div>
+                <p>Scanning your film...</p>
+            </div>
     </div>
 </body>
 <script src="./js/script.js"></script>

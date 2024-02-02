@@ -8,12 +8,17 @@ const bodyParser = require('body-parser');
 
 const app = express();
 const server = http.createServer(app);
+
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ server });
+
 app.use(bodyParser.json());
 
 const port = 3000;
 let clickQueue = [];
 let isProcessingClicks = false;
 let accumulatedData = Buffer.alloc(0);
+let currentResponse = null;
 
 let settings = {
     film_type: "colour",
@@ -51,27 +56,65 @@ const clickLocations = {
     'look_rich': [[85, 520], [400, 300], [416, 400], [550, 300]],
 };
 
+wss.on('connection', (ws) => {
+    console.log('Client connected via WebSocket');
+
+    // Function to send messages via WebSocket
+    function sendWebSocketMessage(message) {
+        ws.send(JSON.stringify({ message: message }));
+    }
+
+    // Example usage
+    sendWebSocketMessage('Hello from the server!');
+
+    ws.on('message', (message) => {
+        // Convert the binary data (Buffer) to a string and parse as JSON
+        try {
+            const messageString = message.toString();
+            const data = JSON.parse(messageString);
+            settings = data.clientSettings;
+            handleCommand(data.command);
+            input();
+        } catch (error) {
+            console.error('Error parsing message from client:', error);
+        }
+    });
+
+    ws.on('close', () => {
+        console.log('Client disconnected');
+    });
+});
+
 app.use(express.static('../public'));
 
 // Endpoint to receive settings and commands
-app.post('/update-settings', (req, res) => {
+app.post('/update', (req, res) => {
     const { clientSettings, command } = req.body;
+    
+    // Acknowledge the HTTP request immediately
+    res.status(200).send({ message: 'Request received' });
+
     if (clientSettings) {
-        // Update your settings logic here
         console.log('Received settings from client:', clientSettings);
         settings = clientSettings;
-        input();
+        compareAndProcessSettings(clientSettings);
     }
 
     if (command) {
-        // Process command logic here
         console.log('Received command:', command);
         handleCommand(command);
         input();
     }
-
-    res.send({ message: 'Settings updated' });
 });
+
+// Function to send messages via WebSocket
+function sendClientMessage(message) {
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ message: message }));
+        }
+    });
+}
 
 const client = new net.Socket();
 client.on('error', (err) => console.error('\x1b[31m%s\x1b[0m', 'Socket error:', err));
@@ -92,6 +135,7 @@ client.on('data', (data) => {
             try {
                 const statusObject = JSON.parse(statusData);
                 console.log('Server status: ', statusObject.status);
+                sendClientMessage('Server status: ' + statusObject.status);
             } catch (e) {
                 console.error('Error parsing status JSON:', e);
             }
@@ -150,6 +194,7 @@ function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
             compareAndProcessSettings(serverSettings);
         } else {
             console.log('\x1b[32m%s\x1b[0m', 'Client and server settings are in sync');
+            sendClientMessage('Client and server settings are in sync');
             serverSettings = settings;
             input();
         }
@@ -192,7 +237,6 @@ function requestserverSettings(s) {
 
 client.connect(8080, '192.168.1.20', () => {
     console.log('Connected to VM');
-    requestserverSettings();
     input();
 });
 
@@ -272,6 +316,10 @@ function processClickQueue() {
         if (isProcessingClicks) {
             console.log('\x1b[32m%s\x1b[0m', 'All clicks processed');
             isProcessingClicks = false;
+
+            //Send response to client
+            sendClientMessage('All clicks processed');
+
             input(); // Ready to accept the next command
         }
         return;
@@ -283,7 +331,7 @@ function processClickQueue() {
     sendClick(click.x, click.y); // Send the click
 
     // Set a timeout to process the next click after a delay
-    setTimeout(processClickQueue, 2000); // Delay of 0.5 seconds between clicks
+    setTimeout(processClickQueue, 3000);
 }
 
 function sendClick(x, y) {
