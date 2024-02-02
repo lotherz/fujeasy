@@ -148,55 +148,18 @@ def communicate_state(state, client_socket):
     print(state)
 
 @asyncio.coroutine
-def scan(client_socket):
-    global scan_task
-    try:
-        while True:
+def continuous_film_monitoring():
+    while True:
+        try:
             screenshot = take_screenshot()
-            
             tolerance = 0.999
-            
-            insert_film_dialogue = compare_with_reference(screenshot, reference_images["film_insert_dialogue"], monitored_regions["film_insert_dialogue"], tolerance)
-            dark_correction = compare_with_reference(screenshot, reference_images["dark_correction"], monitored_regions["dark_correction"], tolerance)
-            film_position_dialogue = compare_with_reference(screenshot, reference_images["film_position_dialogue"], monitored_regions["film_position_dialogue"], tolerance)
-            barcode_dialogue = compare_with_reference(screenshot, reference_images["barcode_dialogue"], monitored_regions["barcode_dialogue"], tolerance)
-            order_finish = compare_with_reference(screenshot, reference_images["order_finish"], monitored_regions["order_finish"], tolerance)
-            film_reversed = compare_with_reference(screenshot, reference_images["film_reversed"], monitored_regions["film_reversed"], tolerance)
-            
-            if scan_task.cancelled():
-                communicate_state("Scan Cancelled", client_socket)
-                break
-            
-            if insert_film_dialogue:
-                communicate_state("Awaiting Film Insertion", client_socket)
-                yield from asyncio.sleep(2)
-            elif dark_correction:
-                communicate_state("Awaiting Dark Correction", client_socket)
-                yield from asyncio.sleep(2)
-            elif film_position_dialogue:
-                communicate_state("Accepted film position", client_socket)
-                pyautogui.click(575, 500)
-                yield from asyncio.sleep(2)
-            elif barcode_dialogue:
-                communicate_state("Barcode dialogue detected, starting scan", client_socket)
-                pyautogui.click(575, 420)
-                yield from asyncio.sleep(2)
-            elif order_finish:
-                communicate_state("Incomplete order, insert more film to continue", client_socket)
-                yield from asyncio.sleep(2)
-            elif film_reversed:
-                communicate_state("Film is reversed, please flip the film", client_socket)
-                pyautogui.click(575, 420)
-                break
-            else:
-                communicate_state("Processing...", client_socket)
-                yield from asyncio.sleep(2)
-                
-    except asyncio.CancelledError :
-            communicate_state("Scan Cancelled", client_socket)
-            # Perform any necessary cleanup here
-    finally:
-        scan_task = None  # Reset scan_task after cancellation or completion
+            dialogues = ["film_insert_dialogue", "dark_correction", "film_position_dialogue", "barcode_dialogue", "order_finish", "film_reversed"]
+            for dialogue in dialogues:
+                if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance):
+                    print("{} detected.".format(dialogue.replace('_', ' ').capitalize()))
+            yield from asyncio.sleep(1)  # Adjust sleep duration as needed
+        except Exception as e:
+            print("Error in continuous monitoring: {}".format(e))
 
 @asyncio.coroutine
 def process_command(command, client_socket):
@@ -226,7 +189,6 @@ def process_command(command, client_socket):
 
     except Exception as e:
         print("Error in process_command:, ", e)
-
 
 @asyncio.coroutine
 def handle_client(client_socket):
@@ -260,27 +222,26 @@ def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', 8080))
     server_socket.listen(5)
-    server_socket.setblocking(False)  # Set the socket to non-blocking
+    server_socket.setblocking(False)
+
+    asyncio.ensure_future(continuous_film_monitoring())  # Start continuous monitoring
 
     while True:
         try:
             client_socket, addr = yield from loop.sock_accept(server_socket)
             if client_socket is not None:
-                print("Connection has been established: ", addr)
-                asyncio.async(handle_client(client_socket))  # Start a new task for each client
+                print("Connection has been established: {}".format(addr))
+                asyncio.ensure_future(handle_client(client_socket))
             else:
                 print("No client socket received.")
-                yield from asyncio.sleep(1)  # Wait a bit before trying again
+                yield from asyncio.sleep(1)
         except Exception as e:
-            print("Error accepting client connection: ", e)
-            yield from asyncio.sleep(1)  # Wait a bit before trying again
-
+            print("Error accepting client connection: {}".format(e))
+            yield from asyncio.sleep(1)
+            
 # Start the asyncio event loop
 loop = asyncio.get_event_loop()
 loop.run_until_complete(start_server())
-
-global scan_task
-scan_task = asyncio.async(scan(client_socket))
 
 
 
