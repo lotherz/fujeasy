@@ -239,22 +239,31 @@ def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', 8080))
     server_socket.listen(5)
-    server_socket.setblocking(False)
+    server_socket.setblocking(False)  # Set the socket to non-blocking
 
     while True:
         try:
             client_socket, addr = yield from loop.sock_accept(server_socket)
             if client_socket is not None:
                 print("Connection has been established: {}".format(addr))
-                asyncio.ensure_future(handle_client(client_socket))
-                schedule_coroutine = getattr(asyncio, "async")
-                schedule_coroutine(continuous_film_monitoring(client_socket))  # Use asyncio.async for Python 3.4
+                # Adapt to both Python 3.4 and newer versions
+                try:
+                    asyncio.ensure_future(handle_client(client_socket))
+                except AttributeError:
+                    getattr(asyncio, 'async')(handle_client(client_socket))
+                
+                # Similarly for continuous_film_monitoring
+                try:
+                    asyncio.ensure_future(continuous_film_monitoring(client_socket))
+                except AttributeError:
+                    getattr(asyncio, 'async')(continuous_film_monitoring(client_socket))
             else:
                 print("No client socket received.")
-                yield from asyncio.sleep(1)
+                yield from asyncio.sleep(1)  # Wait a bit before trying again
         except Exception as e:
             print("Error accepting client connection: {}".format(e))
-            yield from asyncio.sleep(1)
+            yield from asyncio.sleep(1)  # Wait and try again
+
             
 # Start the asyncio event loop
 loop = asyncio.get_event_loop()
