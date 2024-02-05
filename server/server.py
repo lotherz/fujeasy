@@ -230,12 +230,12 @@ def handle_client(client_socket):
                     except ValueError as e:
                         print("Error processing JSON data: ", e)
                 buffer = parts[-1]  # Retain the remaining part for the next loop iteration
-        client_socket.close()
-        print("Connection closed.")
     except Exception as e:
         print("Error handling client: ", e)
+    finally:
+        client_socket.close()
+        print("Connection closed.")
 
-        
 @asyncio.coroutine
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
