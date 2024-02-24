@@ -60,12 +60,12 @@ wss.on('connection', (ws) => {
     console.log('Client connected via WebSocket');
 
     // Function to send messages via WebSocket
-    function sendWebSocketMessage(message) {
-        ws.send(JSON.stringify({ message: message }));
-    }
+    //function sendWebSocketMessage(message) {
+    //    ws.send(JSON.stringify({ message: message }));
+    //}
 
     // Example usage
-    sendWebSocketMessage('Hello from the server!');
+    //sendWebSocketMessage('Hello from the server!');
 
     ws.on('message', (message) => {
         // Convert the binary data (Buffer) to a string and parse as JSON
@@ -85,7 +85,7 @@ wss.on('connection', (ws) => {
     });
 });
 
-app.use(express.static('../public'));
+app.use(express.static('../client/public'));
 
 // Endpoint to receive settings and commands
 app.post('/update', (req, res) => {
@@ -235,7 +235,7 @@ function requestserverSettings(s) {
     client.write(JSON.stringify({ type: 'get_settings' }) + '<END_OF_JSON>');
 }
 
-client.connect(8080, '192.168.1.20', () => {
+client.connect(8080, '192.168.0.20', () => {
     console.log('Connected to VM');
     input();
 });
@@ -253,6 +253,7 @@ function processClicksForSetting(setting) {
 }
 
 function compareAndProcessSettings(serverSettings) {
+    sendClientMessage('Processing clicks, please wait...');
     if (!serverSettings) {
         console.log('\x1b[31m%s\x1b[0m', 'Current settings not available.');
         return;

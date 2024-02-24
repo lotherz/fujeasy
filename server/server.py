@@ -260,7 +260,7 @@ def start_server():
                 except AttributeError:
                     getattr(asyncio, 'async')(continuous_film_monitoring(client_socket))
             else:
-                print("No client socket received.")
+
                 yield from asyncio.sleep(1)  # Wait a bit before trying again
         except Exception as e:
             print("Error accepting client connection: {}".format(e))

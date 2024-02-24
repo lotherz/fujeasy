@@ -1,0 +1,95 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    background-color: #EDEBE6;
+
+}
+
+#wrapper {
+    height: 100%;
+    margin: 120px;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+  
+    .content-wrapper {
+      width: 100%; // Example width, adjust as necessary
+      max-width: 1200px; // Maximum width of the content area
+    }
+  }
+
+#logo {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    width: 15%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Garamond BE Medium Condensed';
+    font-weight: 600;
+    letter-spacing: -3px;
+    font-size: 96px;
+}
+
+h1 {
+    margin-bottom: 48px;
+}
+
+h3 {
+    letter-spacing: -1px;
+    font-size: 18px;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+
+
+.radioGroup {
+    margin-bottom: 24px;
+    border-color: #181818;
+    border: solid;
+    border-bottom: 1px;
+    border-left: 0px;
+    border-right: 0px;
+    border-top: 0px;
+
+    label {
+        margin-right: 16px;
+        font-size: 16px;
+        font-family: 'IBM Plex Mono', monospace;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        cursor: pointer;
+    }
+
+    input {
+        cursor: pointer;
+    }
+}
+
+button {
+    width: 100%;
+    background-color: #EDEBE6;
+    border-width: 1px;
+    padding: 12px;
+    margin-top: 96px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    &:hover {
+        background-color: #181818;
+        color: #EDEBE6;
+    }
+}
+
+#settingsForm {
+    display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	grid-template-rows: repeat(2, 8vh);
+	grid-gap: 1em;
+}
