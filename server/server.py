@@ -23,7 +23,8 @@ reference_images = {
     "dark_correction": file_path + "/dark_correction.png",
     "order_finish": file_path + "/order_finish.png",
     "film_reversed": file_path + "/film_reversed.png",
-    "processing": file_path + "/processing.png"
+    "processing": file_path + "/processing.png",
+    "reading_image": file_path + "/reading_image.png"
 }
 
 monitored_regions = {
@@ -37,7 +38,8 @@ monitored_regions = {
     "dark_correction":          (189, 202, 214, 95),
     "order_finish":             (451, 501, 114, 31),
     "film_reversed":            (189, 202, 341, 90),
-    "processing":               (113, 217, 575, 167) 
+    "processing":               (113, 217, 575, 167),
+    "reading_image":            (113, 217, 575, 167)
     #                           (x-coordinate, y-coordinate, width, height)
 }
 
@@ -170,7 +172,8 @@ def continuous_film_monitoring(client_socket):
                 "barcode_dialogue": ("Barcode Dialogue Detected, Starting Scan", (575, 420)),
                 "order_finish": ("Incomplete Order, Insert More Film to Continue", None),
                 "film_reversed": ("Film is Reversed, Please Flip the Film", (575, 420)),
-                "processing": ("Processing...", None)
+                "processing": ("Processing...", None),
+                "reading_image": ("Reading Image...", None)
             }
             for dialogue, (state, click_position) in dialogues.items():
                 if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance, 1):
