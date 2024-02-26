@@ -170,19 +170,18 @@ def continuous_film_monitoring(client_socket):
                 "film_reversed": ("Film is Reversed, Please Flip the Film", (575, 420))
             }
             for dialogue, (state, click_position) in dialogues.items():
-                if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance, 1):
+                if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance, 0):
                     print("{} detected.".format(dialogue.replace('_', ' ').capitalize()))
                     detected_state = state
+                    # Only communicate the state if it is different from the last communicated state
+                    if detected_state and detected_state != last_state:
+                        communicate_state(detected_state, client_socket)  # Send detected state to client
+                        last_state = detected_state  # Update the last communicated state
+                        
                     # Perform the click if a click position is specified for the detected dialogue
                     if click_position:
                         pyautogui.click(*click_position)
                     break  # Stop checking once the first dialogue is detected
-
-            # Only communicate the state if it is different from the last communicated state
-            if detected_state and detected_state != last_state:
-                communicate_state(detected_state, client_socket)  # Send detected state to client
-                last_state = detected_state  # Update the last communicated state
-
             yield from asyncio.sleep(1)  # Adjust sleep duration as needed
         except Exception as e:
             print("Error in continuous monitoring: {}".format(e))
