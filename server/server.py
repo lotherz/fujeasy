@@ -8,23 +8,23 @@ import numpy as np
 from PIL import Image
 import asyncio
 
-file_path = "//Mac/Home/Documents/fujeasy/server/screenshots"
+fp = "//Mac/Home/Documents/fujeasy/server/screenshots"
 
 reference_images = {
-    "film_type": file_path + "/film_type_true.png",
-    "border": file_path + "/border_true.png",
-    "file_format": file_path + "/file_format_true.png",
-    "look_soft": file_path + "/look_soft_3.png",
-    "look_standard": file_path + "/look_standard_4.png",
-    "look_rich": file_path + "/look_rich_5.png",
-    "film_insert_dialogue": file_path + "/film_insert_dialogue.png",
-    "film_position_dialogue": file_path + "/film_position.png",
-    "barcode_dialogue": file_path + "/barcode_dialogue.png",
-    "dark_correction": file_path + "/dark_correction.png",
-    "incomplete_order": file_path + "/incomplete_order.png",
-    "film_reversed": file_path + "/film_reversed.png",
-    "processing": file_path + "/processing.png",
-    "reading_image": file_path + "/reading_image.png"
+    "film_type": fp + "/film_type_true.png",
+    "border": fp + "/border_true.png",
+    "file_format": fp + "/file_format_true.png",
+    "look_soft": fp + "/look_soft_3.png",
+    "look_standard": fp + "/look_standard_4.png",
+    "look_rich": fp + "/look_rich_5.png",
+    "film_insert_dialogue": fp + "/film_insert_dialogue.png",
+    "film_position_dialogue": fp + "/film_position.png",
+    "barcode_dialogue": fp + "/barcode_dialogue.png",
+    "dark_correction": fp + "/dark_correction.png",
+    "incomplete_order": fp + "/incomplete_order.png",
+    "film_reversed": fp + "/film_reversed.png",
+    "processing": fp + "/processing.png",
+    "reading_image": fp + "/reading_image.png"
 }
 
 monitored_regions = {
