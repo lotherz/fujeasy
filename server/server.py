@@ -148,8 +148,12 @@ def send_settings(client_socket):
 
     client_socket.sendall(settings_json.encode('utf-8') + b'<END_OF_JSON>')
 
+import asyncio
+import pyautogui
+
 @asyncio.coroutine
 def continuous_film_monitoring(client_socket):
+    last_state = None  # Variable to keep track of the last communicated state
     while True:
         try:
             screenshot = take_screenshot()
@@ -172,14 +176,15 @@ def continuous_film_monitoring(client_socket):
                         pyautogui.click(*click_position)
                     break  # Stop checking once the first dialogue is detected
 
-            if detected_state:
+            # Only communicate the state if it is different from the last communicated state
+            if detected_state and detected_state != last_state:
                 communicate_state(detected_state, client_socket)  # Send detected state to client
-            
+                last_state = detected_state  # Update the last communicated state
+
             yield from asyncio.sleep(1)  # Adjust sleep duration as needed
         except Exception as e:
             print("Error in continuous monitoring: {}".format(e))
             yield from asyncio.sleep(1)
-
 
 @asyncio.coroutine
 def process_command(command, client_socket):
