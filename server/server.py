@@ -100,9 +100,8 @@ def compare_with_reference(screenshot_data, reference_image_path, region, thresh
     _, max_val, _, _ = cv2.minMaxLoc(similarity)
 
     #REFERENCE DEBUGGING
-    if (noMessage) {
+    if noMessage :
         print("Comparing with " + reference_image_path + ", similarity score: " + str(max_val))
-    }
 
     return max_val >= threshold
 
