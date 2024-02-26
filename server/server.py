@@ -21,7 +21,7 @@ reference_images = {
     "film_position_dialogue": file_path + "/film_position.png",
     "barcode_dialogue": file_path + "/barcode_dialogue.png",
     "dark_correction": file_path + "/dark_correction.png",
-    "order_finish": file_path + "/order_finish.png",
+    "incomplete_order": file_path + "/incomplete_order.png",
     "film_reversed": file_path + "/film_reversed.png",
     "processing": file_path + "/processing.png",
     "reading_image": file_path + "/reading_image.png"
@@ -36,7 +36,7 @@ monitored_regions = {
     "film_position_dialogue":   (145, 445, 510, 88),
     "barcode_dialogue":         (189, 202, 214, 95),
     "dark_correction":          (189, 202, 214, 95),
-    "order_finish":             (451, 501, 114, 31),
+    "incomplete_order":         (451, 501, 114, 31),
     "film_reversed":            (189, 202, 341, 90),
     "processing":               (113, 217, 575, 167),
     "reading_image":            (113, 217, 575, 167)
@@ -170,7 +170,7 @@ def continuous_film_monitoring(client_socket):
                 "dark_correction": ("Awaiting Dark Correction", None),
                 "film_position_dialogue": ("Accepted Film Position", (575, 500)),
                 "barcode_dialogue": ("Barcode Dialogue Detected, Starting Scan", (575, 420)),
-                "order_finish": ("Incomplete Order, Insert More Film to Continue", None),
+                "incomplete_order": ("Incomplete Order, Insert More Film to Continue", None),
                 "film_reversed": ("Film is Reversed, Please Flip the Film", (575, 420)),
                 "processing": ("Processing...", None),
                 "reading_image": ("Reading Image...", None)
@@ -178,9 +178,9 @@ def continuous_film_monitoring(client_socket):
             for dialogue, (state, click_position) in dialogues.items():
                 if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance, 1):
                     detected_state = state
+                    
                     # Only communicate the state if it is different from the last communicated state
                     if detected_state and detected_state != last_state:
-                        print("{} detected.".format(dialogue.replace('_', ' ').capitalize()))
                         communicate_state(detected_state, client_socket)  # Send detected state to client
                         last_state = detected_state  # Update the last communicated state
                         
