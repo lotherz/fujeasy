@@ -82,7 +82,8 @@ def derive_settings():
     }
     return settings
 
-def compare_with_reference(screenshot_data, reference_image_path, region, threshold, noMessage):
+def compare_with_reference(screenshot_data, reference_image_path, region, threshold, skipMessage):
+    
     reference_image = cv2.imread(reference_image_path)
     if reference_image is None:
         #print("Error loading reference image: " + reference_image_path)
@@ -100,7 +101,7 @@ def compare_with_reference(screenshot_data, reference_image_path, region, thresh
     _, max_val, _, _ = cv2.minMaxLoc(similarity)
 
     #REFERENCE DEBUGGING
-    if noMessage :
+    if not skipMessage:
         print("Comparing with " + reference_image_path + ", similarity score: " + str(max_val))
 
     return max_val >= threshold
