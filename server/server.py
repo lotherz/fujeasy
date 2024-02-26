@@ -170,11 +170,11 @@ def continuous_film_monitoring(client_socket):
                 "film_reversed": ("Film is Reversed, Please Flip the Film", (575, 420))
             }
             for dialogue, (state, click_position) in dialogues.items():
-                if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance, 0):
-                    print("{} detected.".format(dialogue.replace('_', ' ').capitalize()))
+                if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance, 1):
                     detected_state = state
                     # Only communicate the state if it is different from the last communicated state
                     if detected_state and detected_state != last_state:
+                        print("{} detected.".format(dialogue.replace('_', ' ').capitalize()))
                         communicate_state(detected_state, client_socket)  # Send detected state to client
                         last_state = detected_state  # Update the last communicated state
                         
