@@ -60,7 +60,7 @@ def get_look():
     threshold = 0.99
     
     for look, reference in looks.items():
-        if compare_with_reference(screenshot, reference, monitored_regions["look_dropdown"], threshold):
+        if compare_with_reference(screenshot, reference, monitored_regions["look_dropdown"], threshold, 0):
             pyautogui.click(550, 300)  # Click to commit the change, if needed
             #print("Look: " + look)
             return look
@@ -75,9 +75,9 @@ def derive_settings():
     screenshot = take_screenshot()
     threshold = 0.99
     settings = {
-        "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], monitored_regions["film_type"], threshold) else "bw",
-        "border": 0 if compare_with_reference(screenshot, reference_images["border"], monitored_regions["border"], 0.999) else 1,
-        "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], monitored_regions["file_format"], threshold) else "TIFF",
+        "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], monitored_regions["film_type"], threshold, 0) else "bw",
+        "border": 0 if compare_with_reference(screenshot, reference_images["border"], monitored_regions["border"], 0.999, 0) else 1,
+        "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], monitored_regions["file_format"], threshold, 0) else "TIFF",
         "look": get_look()
     }
     return settings
