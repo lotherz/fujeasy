@@ -24,7 +24,8 @@ reference_images = {
     "incomplete_order": fp + "/incomplete_order.png",
     "film_reversed": fp + "/film_reversed.png",
     "processing": fp + "/processing.png",
-    "reading_image": fp + "/reading_image.png"
+    "reading_image": fp + "/reading_image.png",
+    "grid_view": fp + "/grid_view.png"
 }
 
 monitored_regions = {
@@ -39,7 +40,8 @@ monitored_regions = {
     "incomplete_order":         (2, 499, 563, 35),
     "film_reversed":            (189, 202, 341, 90),
     "processing":               (113, 217, 575, 167),
-    "reading_image":            (113, 217, 575, 167)
+    "reading_image":            (113, 217, 575, 167),
+    "grid_view":                (0, 498, 800, 36)
     #                           (x-coordinate, y-coordinate, width, height)
 }
 
@@ -173,7 +175,8 @@ def continuous_film_monitoring(client_socket):
                 "incomplete_order": ("Incomplete Order, Insert More Film to Continue", None),
                 "film_reversed": ("Film is Reversed, Please Flip the Film", (575, 420)),
                 "processing": ("Processing...", None),
-                "reading_image": ("Reading Image...", None)
+                "reading_image": ("Reading Image...", None),
+                "grid_view": ("Progressing Scan...", (745, 515))
             }
             for dialogue, (state, click_position) in dialogues.items():
                 if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance, 1):
