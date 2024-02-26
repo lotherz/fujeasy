@@ -77,6 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
             case 'Server status: Awaiting Dark Correction':
             case 'Server status: Barcode Dialogue Detected, Starting Scan':
             case 'Server status: Accepted Film Position':
+            case 'Server status: Reading Image...':
                 if (stateIndex < 4) {
                     toggleDivVisibility('scanning', state[stateIndex]);
                     stateIndex = 4; // Set stateIndex to scanning
