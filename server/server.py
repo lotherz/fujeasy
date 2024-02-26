@@ -36,7 +36,7 @@ monitored_regions = {
     "film_position_dialogue":   (145, 445, 510, 88),
     "barcode_dialogue":         (189, 202, 214, 95),
     "dark_correction":          (189, 202, 214, 95),
-    "incomplete_order":         (451, 501, 114, 31),
+    "incomplete_order":         (2, 499, 563, 35),
     "film_reversed":            (189, 202, 341, 90),
     "processing":               (113, 217, 575, 167),
     "reading_image":            (113, 217, 575, 167)
