@@ -82,7 +82,7 @@ def derive_settings():
     }
     return settings
 
-def compare_with_reference(screenshot_data, reference_image_path, region, threshold):
+def compare_with_reference(screenshot_data, reference_image_path, region, threshold, noMessage):
     reference_image = cv2.imread(reference_image_path)
     if reference_image is None:
         #print("Error loading reference image: " + reference_image_path)
@@ -100,7 +100,9 @@ def compare_with_reference(screenshot_data, reference_image_path, region, thresh
     _, max_val, _, _ = cv2.minMaxLoc(similarity)
 
     #REFERENCE DEBUGGING
-    print("Comparing with " + reference_image_path + ", similarity score: " + str(max_val))
+    if (noMessage) {
+        print("Comparing with " + reference_image_path + ", similarity score: " + str(max_val))
+    }
 
     return max_val >= threshold
 
@@ -168,7 +170,7 @@ def continuous_film_monitoring(client_socket):
                 "film_reversed": ("Film is Reversed, Please Flip the Film", (575, 420))
             }
             for dialogue, (state, click_position) in dialogues.items():
-                if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance):
+                if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance, 1):
                     print("{} detected.".format(dialogue.replace('_', ' ').capitalize()))
                     detected_state = state
                     # Perform the click if a click position is specified for the detected dialogue
