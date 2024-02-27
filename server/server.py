@@ -26,7 +26,8 @@ reference_images = {
     "processing": fp + "/processing.png",
     "processing_greyed": fp + "/processing_greyed.png",
     "reading_image": fp + "/reading_image.png",
-    "grid_view": fp + "/grid_view.png"
+    "grid_view": fp + "/grid_view.png",
+    "scan_finished": fp + "/scan_finished.png"
 }
 
 monitored_regions = {
@@ -43,7 +44,8 @@ monitored_regions = {
     "processing":               (113, 217, 575, 167),
     "processing_greyed":        (113, 217, 575, 167),
     "reading_image":            (113, 217, 575, 167),
-    "grid_view":                (0, 498, 800, 36)
+    "grid_view":                (0, 498, 800, 36),
+    "scan_finished":            (0, 498, 800, 102)
     #                           (x-coordinate, y-coordinate, width, height)
 }
 
@@ -176,19 +178,23 @@ def continuous_film_monitoring(client_socket):
                 "barcode_dialogue": ("Barcode Dialogue Detected, Starting Scan", (575, 420)),
                 "incomplete_order": ("Incomplete Order, Insert More Film to Continue", None),
                 "film_reversed": ("Film is Reversed, Please Flip the Film", (575, 420)),
+                "reading_image": ("Reading Image...", None),
+                "grid_view": ("Progressing Scan...", (745, 515)),
                 "processing": ("Processing...", None),
                 "processing_greyed": ("Processing...", None),
-                "reading_image": ("Reading Image...", None),
-                "grid_view": ("Progressing Scan...", (745, 515))
+                "scan_finished": ("Scan Finished", None)
             }
             for dialogue, (state, click_position) in dialogues.items():
                 if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance, 1):
                     detected_state = state
                     
-                    # Only communicate the state if it is different from the last communicated state
-                    if detected_state and detected_state != last_state:
-                        communicate_state(detected_state, client_socket)  # Send detected state to client
-                        last_state = detected_state  # Update the last communicated state
+                    if detected_state == "Scan Finished" and last_state != "Processing...":
+                        break
+                    else:                    
+                        # Only communicate the state if it is different from the last communicated state
+                        if detected_state and detected_state != last_state:
+                            communicate_state(detected_state, client_socket)  # Send detected state to client
+                            last_state = detected_state  # Update the last communicated state
                         
                     # Perform the click if a click position is specified for the detected dialogue
                     if click_position:
