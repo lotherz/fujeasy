@@ -190,7 +190,7 @@ def continuous_film_monitoring(client_socket):
                     
                     if detected_state == "Scan Finished" and last_state != "Processing...":
                         break
-                    else:                    
+                    else:
                         # Only communicate the state if it is different from the last communicated state
                         if detected_state and detected_state != last_state:
                             communicate_state(detected_state, client_socket)  # Send detected state to client
