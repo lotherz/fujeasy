@@ -90,6 +90,9 @@ document.addEventListener('DOMContentLoaded', function () {
             case 'Server status: Incomplete Order, Insert More Film to Continue':
                 advanceState();
                 break;
+            case 'Server status: Scan Finished':
+                advanceState(2);
+                break;
             case 'error':
                 showErrorState();
                 break;
