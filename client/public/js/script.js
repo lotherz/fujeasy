@@ -3,6 +3,7 @@ let state = [
     "loading",
     "insertfilm",
     "scanning",
+    "scanningincomplete",
     "scanningcomplete"
 ];
 let stateIndex = 0;
@@ -72,16 +73,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 advanceState();
                 break;
             case 'Client and server settings are in sync':
-                advanceState(2); // Skip a state as intended
+                advanceState(2)
                 break; // Add this break statement to prevent fall-through
             case 'Server status: Awaiting Dark Correction':
             case 'Server status: Barcode Dialogue Detected, Starting Scan':
             case 'Server status: Accepted Film Position':
             case 'Server status: Reading Image...':
-                if (stateIndex < 4) {
+                if (stateIndex < 3) {
                     toggleDivVisibility('scanning', state[stateIndex]);
-                    stateIndex = 4; // Set stateIndex to scanning
+                    stateIndex = 3; // Set stateIndex to scanning
+                } else if (stateIndex === 4) { 
+                    toggleDivVisibility('scanning', state[stateIndex]);
+                    stateIndex = 3; // Set stateIndex to scanning
                 }
+                break;
+            case 'Server status: Incomplete Order, Insert More Film to Continue':
+                advanceState();
                 break;
             case 'error':
                 showErrorState();
