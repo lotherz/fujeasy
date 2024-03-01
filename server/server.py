@@ -103,7 +103,7 @@ def get_job_number(byte_data):
     # Extract job number using OCR
     x, y, w, h = monitored_regions["job_number"]
     job_number_region = gray_screenshot[y:y+h, x:x+w]
-    job_number = pytesseract.image_to_string(job_number_region, config='--psm 7')
+    job_number = pytesseract.image_to_string(job_number_region, config='--psm 7 --oem 0')
     print("Job Number:", job_number)
     
     return job_number
