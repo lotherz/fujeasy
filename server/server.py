@@ -82,37 +82,37 @@ def get_look():
     print("Look not found, defaulting to standard")
     return "standard"
 
-def read_job_number():
-    # Define the region to capture (x, y, width, height)
-    region = (56, 25, 35, 11)  # Adjust these values to capture the correct area
-
-    # Use pyautogui to take a screenshot of the specified region
-    screenshot = pyautogui.screenshot(region)
-
-    # Convert the screenshot to an RGB numpy array
-    screenshot_np = np.array(screenshot)
-    # Convert RGB to BGR because OpenCV uses BGR format
+def derive_settings():
+    # Take a full-screen screenshot
+    screenshot_pil = pyautogui.screenshot()
+    screenshot_np = np.array(screenshot_pil)
     screenshot_np = cv2.cvtColor(screenshot_np, cv2.COLOR_RGB2BGR)
 
-    # Convert the image to grayscale, as it can improve OCR accuracy
-    gray = cv2.cvtColor(screenshot_np, cv2.COLOR_BGR2GRAY)
+    # Define regions for the settings
+    region_film_type = (240, 146, 117, 68)
+    region_border = (386, 146, 168, 68)
+    region_file_format = (386, 376, 116, 67)
+    # Add the region for job number reading
+    region_job_number = (56, 25, 35, 11)  # x, y, width, height
 
-    # Perform OCR using pytesseract
-    job_number = pytesseract.image_to_string(gray, config='--psm 7')  # psm 7 assumes a single line of text
+    # Convert screenshot to grayscale for OCR
+    gray_screenshot = cv2.cvtColor(screenshot_np, cv2.COLOR_BGR2GRAY)
 
-    print(job_number)
-    return job_number
+    # Extract job number using OCR
+    x, y, w, h = region_job_number
+    job_number_region = gray_screenshot[y:y+h, x:x+w]
+    job_number = pytesseract.image_to_string(job_number_region, config='--psm 7')
 
-def derive_settings():
-    read_job_number()
-    screenshot = take_screenshot()
+    # Continue with deriving other settings...
     threshold = 0.99
     settings = {
-        "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], monitored_regions["film_type"], threshold, 0) else "bw",
-        "border": 0 if compare_with_reference(screenshot, reference_images["border"], monitored_regions["border"], 0.999, 0) else 1,
-        "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], monitored_regions["file_format"], threshold, 0) else "TIFF",
-        "look": get_look()
+        "film_type": "colour" if compare_with_reference(screenshot_np, reference_images["film_type"], region_film_type, threshold, 0) else "bw",
+        "border": 0 if compare_with_reference(screenshot_np, reference_images["border"], region_border, 0.999, 0) else 1,
+        "file_format": "JPEG" if compare_with_reference(screenshot_np, reference_images["file_format"], region_file_format, threshold, 0) else "TIFF",
+        "look": get_look(),
+        "job_number": job_number.strip()  # .strip() to remove any leading/trailing whitespaces
     }
+
     return settings
 
 def compare_with_reference(screenshot_data, reference_image_path, region, threshold, skipMessage):
