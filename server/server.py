@@ -32,6 +32,7 @@ reference_images = {
 }
 
 monitored_regions = {
+    "job_number":               (56, 25, 35, 11),
     "film_type":                (240, 146, 117, 68),
     "border":                   (386, 146, 168, 68),
     "file_format":              (386, 376, 116, 67), 
@@ -83,37 +84,26 @@ def get_look():
     return "standard"
 
 def derive_settings():
-    # Take a full-screen screenshot
-    screenshot_pil = pyautogui.screenshot()
-    screenshot_np = np.array(screenshot_pil)
-    screenshot_np = cv2.cvtColor(screenshot_np, cv2.COLOR_RGB2BGR)
+    screenshot = take_screenshot()
+    threshold = 0.99
+    settings = {
+        "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], monitored_regions["film_type"], threshold, 0) else "bw",
+        "border": 0 if compare_with_reference(screenshot, reference_images["border"], monitored_regions["border"], 0.999, 0) else 1,
+        "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], monitored_regions["file_format"], threshold, 0) else "TIFF",
+        "look": get_look(),
+        "job_number": get_job_number(screenshot)
+    }
+    return settings
 
-    # Define regions for the settings
-    region_film_type = (240, 146, 117, 68)
-    region_border = (386, 146, 168, 68)
-    region_file_format = (386, 376, 116, 67)
-    # Add the region for job number reading
-    region_job_number = (56, 25, 35, 11)  # x, y, width, height
-
-    # Convert screenshot to grayscale for OCR
+def get_job_number(screenshot):
+    job_number = None
     gray_screenshot = cv2.cvtColor(screenshot_np, cv2.COLOR_BGR2GRAY)
 
     # Extract job number using OCR
-    x, y, w, h = region_job_number
+    x, y, w, h = monitored_regions["job_number"]
     job_number_region = gray_screenshot[y:y+h, x:x+w]
     job_number = pytesseract.image_to_string(job_number_region, config='--psm 7')
-
-    # Continue with deriving other settings...
-    threshold = 0.99
-    settings = {
-        "film_type": "colour" if compare_with_reference(screenshot_np, reference_images["film_type"], region_film_type, threshold, 0) else "bw",
-        "border": 0 if compare_with_reference(screenshot_np, reference_images["border"], region_border, 0.999, 0) else 1,
-        "file_format": "JPEG" if compare_with_reference(screenshot_np, reference_images["file_format"], region_file_format, threshold, 0) else "TIFF",
-        "look": get_look(),
-        "job_number": job_number.strip()  # .strip() to remove any leading/trailing whitespaces
-    }
-
-    return settings
+    return job_number
 
 def compare_with_reference(screenshot_data, reference_image_path, region, threshold, skipMessage):
     
@@ -182,9 +172,6 @@ def send_settings(client_socket):
     client_socket.sendall(header)  # Send JSON header
 
     client_socket.sendall(settings_json.encode('utf-8') + b'<END_OF_JSON>')
-
-import asyncio
-import pyautogui
 
 @asyncio.coroutine
 def continuous_film_monitoring(client_socket):
