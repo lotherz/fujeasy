@@ -84,7 +84,6 @@ def get_look():
     return "standard"
 
 def get_job_number(screenshot):
-    def get_job_number(screenshot):
     print("Starting OCR for job number...")
     gray_screenshot = cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY)
     print("Converted screenshot to grayscale.")
