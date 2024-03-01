@@ -87,7 +87,7 @@ def read_job_number():
     region = (56, 25, 35, 11)  # Adjust these values to capture the correct area
 
     # Use pyautogui to take a screenshot of the specified region
-    screenshot = pyautogui.screenshot(region=region)
+    screenshot = pyautogui.screenshot(region)
 
     # Convert the screenshot to an RGB numpy array
     screenshot_np = np.array(screenshot)
