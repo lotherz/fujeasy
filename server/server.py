@@ -6,6 +6,7 @@ import cv2
 import time
 import numpy as np
 from PIL import Image
+import pytesseract
 import asyncio
 
 fp = "//Mac/Home/Documents/fujeasy/server/screenshots"
@@ -80,6 +81,9 @@ def get_look():
     pyautogui.click(550, 300)  # Click to commit the change, if needed
     print("Look not found, defaulting to standard")
     return "standard"
+
+def read_job_number():
+    return
 
 def derive_settings():
     screenshot = take_screenshot()
