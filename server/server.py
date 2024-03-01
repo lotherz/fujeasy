@@ -51,11 +51,13 @@ monitored_regions = {
     #                           (x-coordinate, y-coordinate, width, height)
 }
 
+@asyncio.coroutine
 def communicate_state(state, client_socket):
     status_message = json.dumps({"status": state})
     client_socket.sendall(status_message.encode('utf-8') + b'<END_OF_JSON>')
     print(state)
 
+@asyncio.coroutine
 def get_look():
     pyautogui.click(85, 520)  # Click on the "Custom" button
     
@@ -83,6 +85,7 @@ def get_look():
     print("Look not found, defaulting to standard")
     return "standard"
 
+@asyncio.coroutine
 def derive_settings():
     screenshot = take_screenshot()
     threshold = 0.99
@@ -95,6 +98,7 @@ def derive_settings():
     }
     return settings
 
+@asyncio.coroutine
 def get_job_number(screenshot):
     job_number = None
     gray_screenshot = cv2.cvtColor(screenshot_np, cv2.COLOR_BGR2GRAY)
@@ -105,6 +109,7 @@ def get_job_number(screenshot):
     job_number = pytesseract.image_to_string(job_number_region, config='--psm 7')
     return job_number
 
+@asyncio.coroutine
 def compare_with_reference(screenshot_data, reference_image_path, region, threshold, skipMessage):
     
     reference_image = cv2.imread(reference_image_path)
@@ -129,12 +134,14 @@ def compare_with_reference(screenshot_data, reference_image_path, region, thresh
 
     return max_val >= threshold
 
+@asyncio.coroutine
 def take_screenshot():
     screenshot = pyautogui.screenshot()
     img_byte_arr = io.BytesIO()
     screenshot.save(img_byte_arr, format='PNG')
     return img_byte_arr.getvalue()
 
+@asyncio.coroutine
 def take_screenshot_and_display():
     screenshot = pyautogui.screenshot()
     screenshot.show()  # Display the screenshot using the default image viewer
