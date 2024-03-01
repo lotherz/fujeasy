@@ -83,9 +83,28 @@ def get_look():
     return "standard"
 
 def read_job_number():
-    return
+    # Define the region to capture (x, y, width, height)
+    region = (56, 25, 35, 11)  # Adjust these values to capture the correct area
+
+    # Use pyautogui to take a screenshot of the specified region
+    screenshot = pyautogui.screenshot(region=region)
+
+    # Convert the screenshot to an RGB numpy array
+    screenshot_np = np.array(screenshot)
+    # Convert RGB to BGR because OpenCV uses BGR format
+    screenshot_np = cv2.cvtColor(screenshot_np, cv2.COLOR_RGB2BGR)
+
+    # Convert the image to grayscale, as it can improve OCR accuracy
+    gray = cv2.cvtColor(screenshot_np, cv2.COLOR_BGR2GRAY)
+
+    # Perform OCR using pytesseract
+    job_number = pytesseract.image_to_string(gray, config='--psm 7')  # psm 7 assumes a single line of text
+
+    print(job_number)
+    return job_number
 
 def derive_settings():
+    read_job_number()
     screenshot = take_screenshot()
     threshold = 0.99
     settings = {
