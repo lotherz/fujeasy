@@ -83,6 +83,17 @@ def get_look():
     print("Look not found, defaulting to standard")
     return "standard"
 
+def get_job_number(screenshot):
+    job_number = None
+    gray_screenshot = cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY)
+    print('Extracting Job Number...')
+    # Extract job number using OCR
+    x, y, w, h = monitored_regions["job_number"]
+    job_number_region = gray_screenshot[y:y+h, x:x+w]
+    job_number = pytesseract.image_to_string(job_number_region, config='--psm 7')
+    print('Job Number: ' + job_number)
+    return job_number
+
 def derive_settings():
     screenshot = take_screenshot()
     threshold = 0.99
@@ -94,17 +105,6 @@ def derive_settings():
         "job_number": get_job_number(screenshot)
     }
     return settings
-
-def get_job_number(screenshot):
-    job_number = None
-    gray_screenshot = cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY)
-    print('Extracting Job Number...')
-    # Extract job number using OCR
-    x, y, w, h = monitored_regions["job_number"]
-    job_number_region = gray_screenshot[y:y+h, x:x+w]
-    job_number = pytesseract.image_to_string(job_number_region, config='--psm 7')
-    print('Job Number: ' + job_number)
-    return job_number
 
 def compare_with_reference(screenshot_data, reference_image_path, region, threshold, skipMessage):
     
