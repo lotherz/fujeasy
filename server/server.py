@@ -98,7 +98,7 @@ def derive_settings():
 def get_job_number(screenshot):
     job_number = None
     gray_screenshot = cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY)
-
+    print('Extracting Job Number...')
     # Extract job number using OCR
     x, y, w, h = monitored_regions["job_number"]
     job_number_region = gray_screenshot[y:y+h, x:x+w]
