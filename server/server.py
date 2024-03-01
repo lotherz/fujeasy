@@ -51,6 +51,12 @@ monitored_regions = {
     #                           (x-coordinate, y-coordinate, width, height)
 }
 
+def convert_bytes_to_image(byte_data):
+    image_stream = io.BytesIO(byte_data)
+    image_stream.seek(0)
+    image = Image.open(image_stream)
+    return image
+
 def communicate_state(state, client_socket):
     status_message = json.dumps({"status": state})
     client_socket.sendall(status_message.encode('utf-8') + b'<END_OF_JSON>')
@@ -83,20 +89,23 @@ def get_look():
     print("Look not found, defaulting to standard")
     return "standard"
 
-def get_job_number(screenshot):
+def get_job_number(byte_data):
     print("Starting OCR for job number...")
-    screenshot_image = np.array(screenshot)
+    screenshot = convert_bytes_to_image(byte_data)  # Convert bytes back to PIL Image
+    screenshot_np = np.array(screenshot)  # Convert PIL Image to NumPy array
     print("Converted screenshot to numpy array.")
-    gray_screenshot = cv2.cvtColor(screenshot_image, cv2.COLOR_RGB2GRAY)
+    
+    # Convert from RGB (PIL default) to BGR (OpenCV default)
+    screenshot_np = cv2.cvtColor(screenshot_np, cv2.COLOR_RGB2BGR)
+    gray_screenshot = cv2.cvtColor(screenshot_np, cv2.COLOR_BGR2GRAY)
     print("Converted screenshot to grayscale.")
-
+    
     # Extract job number using OCR
     x, y, w, h = monitored_regions["job_number"]
     job_number_region = gray_screenshot[y:y+h, x:x+w]
-
     job_number = pytesseract.image_to_string(job_number_region, config='--psm 7')
-    print("Job Number:, " + job_number)
-
+    print("Job Number:", job_number)
+    
     return job_number
 
 def derive_settings():
