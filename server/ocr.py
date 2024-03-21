@@ -8,6 +8,8 @@ image_path = r'C:\s_test.png'
 # Open and convert to grayscale
 image = Image.open(image_path).convert('L')
 
+image = ImageOps.invert(image)
+
 # Use the size attribute to get width and height
 width, height = image.size
 
@@ -18,6 +20,8 @@ image = image.resize(new_size, Image.ANTIALIAS)
 
 # Apply a median filter for noise reduction
 image = image.filter(ImageFilter.MedianFilter(size=1))
+
+image = image.filter(ImageFilter.)
 
 #sharpen
 for _ in range(3):
