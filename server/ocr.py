@@ -15,7 +15,7 @@ image = image.filter(ImageFilter.MedianFilter(size=3))
 image.save(r'C:\preprocessed_image.png')
 
 # Now pass the preprocessed image to pytesseract
-text = pytesseract.image_to_string(image, config='--psm 7 -c tessedit_char_whitelist=0123456789')
+text = pytesseract.image_to_string(image, config='-psm 7 -c tessedit_char_whitelist=0123456789')
 
 if (text) :
     print("Found text: " + text)
