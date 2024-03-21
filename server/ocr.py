@@ -24,7 +24,7 @@ for _ in range(3):
      image = image.filter(ImageFilter.SHARPEN)
 
 # Apply a median filter for noise reduction
-image = image.filter(ImageFilter.MedianFilter(size=2))
+image = image.filter(ImageFilter.MedianFilter(size=3))
 
 image.save(r'C:\preprocessed_image.png')
 
