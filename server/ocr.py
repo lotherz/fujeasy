@@ -28,7 +28,7 @@ low_pass = image.filter(ImageFilter.GaussianBlur(radius=5))
 image = ImageChops.subtract(image, low_pass)
 
 # Apply a median filter for noise reduction
-image = image.filter(ImageFilter.MedianFilter(size=3))
+image = image.filter(ImageFilter.MedianFilter(size=1))
 
 image.save(r'C:\preprocessed_image.png')
 
