@@ -12,7 +12,7 @@ image = Image.open(image_path).convert('L')
 width, height = image.size
 
 # Rescale the image, increasing its size by a factor (e.g., 2x, 3x, etc.)
-factor = 4
+factor = 10
 new_size = (int(width * factor), int(height * factor))
 image = image.resize(new_size, Image.ANTIALIAS)
 
