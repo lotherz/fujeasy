@@ -9,7 +9,7 @@ image = Image.open(image_path).convert('L')  # Convert to grayscale
 image = ImageOps.autocontrast(image)  # Improve contrast
 image = image.filter(ImageFilter.MedianFilter())  # Apply a median filter for noise reduction
 
-text = pytesseract.image_to_string(image, config='-psm 7')
+text = pytesseract.image_to_string(image, config='--psm 7')
 
 if (text) :
     print("Found text: " + text)
