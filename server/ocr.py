@@ -9,7 +9,7 @@ image_path = r'C:\s_test.png'
 image = Image.open(image_path).convert('L')
 
 #invert image
-image = ImageOps.invert(image)
+#image = ImageOps.invert(image)
 
 # Use the size attribute to get width and height
 width, height = image.size
@@ -19,12 +19,12 @@ factor = 10
 new_size = (int(width * factor), int(height * factor))
 image = image.resize(new_size, Image.ANTIALIAS)
 
-# Apply a median filter for noise reduction
-image = image.filter(ImageFilter.MedianFilter(size=1))
-
 #sharpen
 for _ in range(3):
      image = image.filter(ImageFilter.SHARPEN)
+
+# Apply a median filter for noise reduction
+image = image.filter(ImageFilter.MedianFilter(size=2))
 
 image.save(r'C:\preprocessed_image.png')
 
