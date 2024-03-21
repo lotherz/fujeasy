@@ -21,11 +21,9 @@ image = image.resize(new_size, Image.ANTIALIAS)
 # Apply a median filter for noise reduction
 image = image.filter(ImageFilter.MedianFilter(size=1))
 
-image = image.filter(ImageFilter.)
-
 #sharpen
 for _ in range(3):
-     image = image.filter(ImageFilter.EDGE_ENHANCE)
+     image = image.filter(ImageFilter.SHARPEN)
 
 image.save(r'C:\preprocessed_image.png')
 
