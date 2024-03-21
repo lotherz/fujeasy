@@ -27,8 +27,10 @@ low_pass = image.filter(ImageFilter.GaussianBlur(radius=30))
 # to achieve a high-pass filtered effect
 image = ImageChops.subtract(image, low_pass)
 
-# Apply a median filter for noise reduction
-image = image.filter(ImageFilter.MedianFilter(size=1))
+#thresholding
+threshold_value = 128
+image = image.point(lambda p: p > threshold_value and 255)
+
 
 image.save(r'C:\preprocessed_image.png')
 
