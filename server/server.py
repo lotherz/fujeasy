@@ -7,7 +7,7 @@ import time
 import numpy as np
 from PIL import Image
 import asyncio
-from ocr import ocr_read_job_no
+from ocr import read_job_no
 
 
 fp = "//Mac/Home/Documents/fujeasy/server/screenshots"
@@ -106,7 +106,7 @@ def get_job_number(byte_data):
     # Extract job number using OCR
     x, y, w, h = monitored_regions["job_number"]
     job_number_region = gray_screenshot[y:y+h, x:x+w]
-    job_number = ocr_read_job_no(job_number_region)
+    job_number = read_job_no(job_number_region)
     
     if job_number:
         print("Job Number:", job_number)
