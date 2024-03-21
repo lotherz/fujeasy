@@ -6,8 +6,9 @@ import cv2
 import time
 import numpy as np
 from PIL import Image
-import server.ocr as ocr
 import asyncio
+from ocr import ocr_read_job_no
+
 
 fp = "//Mac/Home/Documents/fujeasy/server/screenshots"
 
@@ -105,10 +106,14 @@ def get_job_number(byte_data):
     # Extract job number using OCR
     x, y, w, h = monitored_regions["job_number"]
     job_number_region = gray_screenshot[y:y+h, x:x+w]
-    job_number = ocr.image_to_string(job_number_region, config='--psm 7 --oem 0')
-    print("Job Number:", job_number)
+    job_number = ocr_read_job_no(job_number_region)
     
-    return job_number
+    if job_number:
+        print("Job Number:", job_number)
+        return job_number
+    else:
+        print("Job Number not found.")
+        return
 
 ########### FIX ############
 
@@ -119,8 +124,8 @@ def derive_settings():
         "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], monitored_regions["film_type"], threshold, 0) else "bw",
         "border": 0 if compare_with_reference(screenshot, reference_images["border"], monitored_regions["border"], 0.999, 0) else 1,
         "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], monitored_regions["file_format"], threshold, 0) else "TIFF",
-        "look": get_look()#,
-        #"job_number": get_job_number(screenshot)
+        "look": get_look(),
+        "job_number": get_job_number(screenshot)
         
         ########### FIX ############
     }
