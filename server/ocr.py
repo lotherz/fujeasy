@@ -1,4 +1,4 @@
-from PIL import Image, ImageFilter, ImageOps
+from PIL import Image, ImageFilter, ImageOps, ImageChops
 import pytesseract
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
@@ -19,9 +19,13 @@ factor = 10
 new_size = (int(width * factor), int(height * factor))
 image = image.resize(new_size, Image.ANTIALIAS)
 
-#sharpen
-for _ in range(3):
-     image = image.filter(ImageFilter.SHARPEN)
+# Apply Gaussian blur to create a low-pass filtered image
+# The radius defines the strength of the blur
+low_pass = image.filter(ImageFilter.GaussianBlur(radius=5))
+
+# Subtract the low-pass filtered image from the original image
+# to achieve a high-pass filtered effect
+image = ImageChops.subtract(image, low_pass)
 
 # Apply a median filter for noise reduction
 image = image.filter(ImageFilter.MedianFilter(size=3))
