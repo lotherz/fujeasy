@@ -9,7 +9,7 @@ image_path = r'C:\s_test.png'
 image = Image.open(image_path).convert('L')
 
 # Apply a median filter for noise reduction
-image = image.filter(ImageFilter.MedianFilter(size=0.5))
+image = image.filter(ImageFilter.MedianFilter(size=1))
 
 # Optionally save the preprocessed image to disk for inspection
 image.save(r'C:\preprocessed_image.png')
