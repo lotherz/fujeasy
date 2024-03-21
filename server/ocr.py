@@ -28,7 +28,7 @@ low_pass = image.filter(ImageFilter.GaussianBlur(radius=30))
 image = ImageChops.subtract(image, low_pass)
 
 #thresholding
-threshold_value = 1
+threshold_value = 3
 image = image.point(lambda p: p > threshold_value and 255)
 
 image.save(r'C:\preprocessed_image.png')
