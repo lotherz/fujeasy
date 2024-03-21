@@ -8,6 +8,7 @@ image_path = r'C:\s_test.png'
 # Open and convert to grayscale
 image = Image.open(image_path).convert('L')
 
+#invert image
 image = ImageOps.invert(image)
 
 # Use the size attribute to get width and height
