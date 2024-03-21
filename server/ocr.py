@@ -11,8 +11,7 @@ image = image.filter(ImageFilter.MedianFilter())  # Apply a median filter for no
 
 text = pytesseract.image_to_string(image, config='-psm 7')
 
-if (text) {
+if (text) :
     print("Found text: " + text)
-} else {
+else :
     print("ERROR: Text not found")
-}
