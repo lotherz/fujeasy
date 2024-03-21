@@ -12,7 +12,7 @@ image = Image.open(image_path).convert('L')
 width, height = image.size
 
 # Rescale the image, increasing its size by a factor (e.g., 2x, 3x, etc.)
-factor = 3
+factor = 4
 new_size = (int(width * factor), int(height * factor))
 image = image.resize(new_size, Image.ANTIALIAS)
 
@@ -23,7 +23,7 @@ image = image.filter(ImageFilter.MedianFilter(size=1))
 image.save(r'C:\preprocessed_image.png')
 
 # Now pass the preprocessed image to pytesseract
-text = pytesseract.image_to_string(image, config='-psm 13')
+text = pytesseract.image_to_string(image, config='-psm 7')
 
 if (text) :
     print("Found text: " + text)
