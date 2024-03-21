@@ -8,9 +8,12 @@ image_path = r'C:\s_test.png'
 # Open and convert to grayscale
 image = Image.open(image_path).convert('L')
 
+# Use the size attribute to get width and height
+width, height = image.size
+
 # Rescale the image, increasing its size by a factor (e.g., 2x, 3x, etc.)
 factor = 3
-new_size = (int(image.width * factor), int(image.height * factor))
+new_size = (int(width * factor), int(height * factor))
 image = image.resize(new_size, Image.ANTIALIAS)
 
 # Apply a median filter for noise reduction
