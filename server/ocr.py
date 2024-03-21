@@ -21,7 +21,7 @@ image = image.resize(new_size, Image.ANTIALIAS)
 
 # Apply Gaussian blur to create a low-pass filtered image
 # The radius defines the strength of the blur
-low_pass = image.filter(ImageFilter.GaussianBlur(radius=10))
+low_pass = image.filter(ImageFilter.GaussianBlur(radius=30))
 
 # Subtract the low-pass filtered image from the original image
 # to achieve a high-pass filtered effect
