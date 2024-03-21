@@ -34,7 +34,7 @@ image = ImageOps.invert(image)
 image.save(r'C:\preprocessed_image.png')
 
 # Now pass the preprocessed image to pytesseract
-text = pytesseract.image_to_string(image, config='-psm 7')
+text = pytesseract.image_to_string(image, config='-psm 7 nobatch digits')
 
 if (text) :
     print("Found text: " + text)
