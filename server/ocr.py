@@ -20,8 +20,8 @@ image = image.resize(new_size, Image.ANTIALIAS)
 image = image.filter(ImageFilter.MedianFilter(size=1))
 
 #sharpen
-for _ in range(5):
-     image = image.filter(ImageFilter.SHARPEN)
+for _ in range(3):
+     image = image.filter(ImageFilter.EDGE_ENHANCE)
 
 image.save(r'C:\preprocessed_image.png')
 
