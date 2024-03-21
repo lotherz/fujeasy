@@ -8,9 +8,6 @@ image_path = r'C:\s_test.png'
 # Open and convert to grayscale
 image = Image.open(image_path).convert('L')
 
-#invert image
-#image = ImageOps.invert(image)
-
 # Use the size attribute to get width and height
 width, height = image.size
 
@@ -25,11 +22,14 @@ low_pass = image.filter(ImageFilter.GaussianBlur(radius=30))
 
 # Subtract the low-pass filtered image from the original image
 # to achieve a high-pass filtered effect
-#image = ImageChops.subtract(image, low_pass)
+image = ImageChops.subtract(image, low_pass)
 
 #thresholding
 threshold_value = 2
 image = image.point(lambda p: p > threshold_value and 255)
+
+#invert image
+image = ImageOps.invert(image)
 
 image.save(r'C:\preprocessed_image.png')
 
