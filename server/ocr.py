@@ -20,9 +20,9 @@ image = image.resize(new_size, Image.ANTIALIAS)
 image = image.filter(ImageFilter.MedianFilter(size=1))
 
 #sharpen
-image = image.filter(ImageFilter.SHARPEN)
+for _ in range(5):
+     image = image.filter(ImageFilter.SHARPEN)
 
-# Optionally save the preprocessed image to disk for inspection
 image.save(r'C:\preprocessed_image.png')
 
 # Now pass the preprocessed image to pytesseract
