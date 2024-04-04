@@ -5,7 +5,8 @@ import io
 import cv2
 import time
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter, ImageOps, ImageChops
+import pytesseract
 import asyncio
 from ocr import read_job_no
 
@@ -90,6 +91,44 @@ def get_look():
     print("Look not found, defaulting to standard")
     return "standard"
 
+
+def read_job_no(input_image) :
+
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+    # Open and convert to grayscale
+    image = Image.open(input_image).convert('L')
+
+    # Use the size attribute to get width and height
+    width, height = image.size
+
+    # Rescale the image, increasing its size by a factor (e.g., 2x, 3x, etc.)
+    factor = 10
+    new_size = (int(width * factor), int(height * factor))
+    image = image.resize(new_size, Image.ANTIALIAS)
+
+    # Apply Gaussian blur to create a low-pass filtered image
+    # The radius defines the strength of the blur
+    low_pass = image.filter(ImageFilter.GaussianBlur(radius=30))
+
+    # Subtract the low-pass filtered image from the original image
+    # to achieve a high-pass filtered effect
+    image = ImageChops.subtract(image, low_pass)
+
+    #thresholding
+    threshold_value = 2
+    image = image.point(lambda p: p > threshold_value and 255)
+
+    #invert image
+    image = ImageOps.invert(image)
+
+    #image.save(r'C:\preprocessed_image.png')
+
+    # Now pass the preprocessed image to pytesseract
+    job_no = pytesseract.image_to_string(image, config='-psm 7 nobatch digits')
+    
+    return(job_no)
+
 ########### FIX ############
 
 def get_job_number(byte_data):
@@ -99,13 +138,13 @@ def get_job_number(byte_data):
     print("Converted screenshot to numpy array.")
     
     # Convert from RGB (PIL default) to BGR (OpenCV default)
-    screenshot_np = cv2.cvtColor(screenshot_np, cv2.COLOR_RGB2BGR)
-    gray_screenshot = cv2.cvtColor(screenshot_np, cv2.COLOR_BGR2GRAY)
-    print("Converted screenshot to grayscale.")
+    #screenshot_np = cv2.cvtColor(screenshot_np, cv2.COLOR_RGB2BGR)
+    #gray_screenshot = cv2.cvtColor(screenshot_np, cv2.COLOR_BGR2GRAY)
+    #print("Converted screenshot to grayscale.")
     
     # Extract job number using OCR
     x, y, w, h = monitored_regions["job_number"]
-    job_number_region = gray_screenshot[y:y+h, x:x+w]
+    job_number_region = screenshot_np[y:y+h, x:x+w]
     job_number = read_job_no(job_number_region)
     
     if job_number:
