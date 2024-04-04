@@ -154,15 +154,16 @@ def read_job_no(image) :
 
 def get_job_number(byte_data):
     print("Starting OCR for job number...")
-    screenshot = convert_bytes_to_image(byte_data)  # Convert bytes back to PIL Image
-    print("Converted screenshot to numpy array.")
+    screenshot = convert_bytes_to_image(byte_data)  # Keep as PIL Image, no need to convert to NumPy array
+    print("Screenshot converted to PIL Image.")
 
+    # Coordinates for the region of interest
     x, y, w, h = monitored_regions["job_number"]
-    job_number_region = screenshot[y:y+h, x:x+w]
+    # Crop the region using PIL's crop method. Note: crop expects the second set of coordinates to be the bottom-right corner.
+    job_number_region = screenshot.crop((x, y, x + w, y + h))
     print("Set read OCR region...")
 
-    job_number = read_job_no(job_number_region)
-    
+    job_number = read_job_no(job_number_region)  # job_number_region is already a PIL Image, ready for OCR
     
     if job_number:
         print("Job Number:", job_number)
