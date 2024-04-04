@@ -94,6 +94,7 @@ def get_look():
 
 def read_job_no(input_image) :
 
+    print("Reading job number...")
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
     # Open and convert to grayscale
@@ -136,16 +137,13 @@ def get_job_number(byte_data):
     screenshot = convert_bytes_to_image(byte_data)  # Convert bytes back to PIL Image
     screenshot_np = np.array(screenshot)  # Convert PIL Image to NumPy array
     print("Converted screenshot to numpy array.")
-    
-    # Convert from RGB (PIL default) to BGR (OpenCV default)
-    #screenshot_np = cv2.cvtColor(screenshot_np, cv2.COLOR_RGB2BGR)
-    #gray_screenshot = cv2.cvtColor(screenshot_np, cv2.COLOR_BGR2GRAY)
-    #print("Converted screenshot to grayscale.")
-    
-    # Extract job number using OCR
+
     x, y, w, h = monitored_regions["job_number"]
     job_number_region = screenshot_np[y:y+h, x:x+w]
+    print("Set read OCR region...")
+
     job_number = read_job_no(job_number_region)
+    
     
     if job_number:
         print("Job Number:", job_number)
