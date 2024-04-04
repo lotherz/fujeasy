@@ -99,6 +99,9 @@ def read_job_no(image) :
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
     print("Tesseract path set...")
+    
+    print("Image object type:", type(image))
+    print("Image.size type:", type(image.size))
 
     # Use the size attribute to get width and height
     try:
