@@ -98,12 +98,15 @@ def read_job_no(image) :
     
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-    print("Tesseract path set...")    
+    print("Tesseract path set...")
 
     # Use the size attribute to get width and height
-    width, height = image.size
-
-    print("Image size: ", width, height)
+    try:
+    # Assuming `image` is the PIL Image object
+        width, height = image.size
+        print("Image size: ", width, height)
+    except Exception as e:
+        print("Error accessing image size:", e)
     
     # Rescale the image, increasing its size by a factor (e.g., 2x, 3x, etc.)
     factor = 10
