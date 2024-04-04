@@ -155,11 +155,10 @@ def read_job_no(image) :
 def get_job_number(byte_data):
     print("Starting OCR for job number...")
     screenshot = convert_bytes_to_image(byte_data)  # Convert bytes back to PIL Image
-    screenshot_np = np.array(screenshot)  # Convert PIL Image to NumPy array
     print("Converted screenshot to numpy array.")
 
     x, y, w, h = monitored_regions["job_number"]
-    job_number_region = screenshot_np[y:y+h, x:x+w]
+    job_number_region = screenshot[y:y+h, x:x+w]
     print("Set read OCR region...")
 
     job_number = read_job_no(job_number_region)
