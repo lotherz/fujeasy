@@ -92,19 +92,13 @@ def get_look():
     return "standard"
 
 
-def read_job_no(input_image) :
+def read_job_no(image) :
 
     print("Reading job number...")
     
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-    print("Tesseract path set...")
-
-    # Open and convert to grayscale
-    image = Image.open(input_image).convert('L')
-    
-    print("Image opened and converted to grayscale...")
-    
+    print("Tesseract path set...")    
 
     # Use the size attribute to get width and height
     width, height = image.size
