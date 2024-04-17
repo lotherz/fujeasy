@@ -141,8 +141,6 @@ def read_job_no(image) :
     
     print("Image inverted...")
 
-    #image.save(r'C:\preprocessed_image.png')
-
     # Now pass the preprocessed image to pytesseract
     job_no = pytesseract.image_to_string(image, config='-psm 7 nobatch digits')
     
@@ -153,12 +151,14 @@ def read_job_no(image) :
 ########### FIX ############
 
 def get_job_number(byte_data):
+    
     print("Starting OCR for job number...")
     screenshot = convert_bytes_to_image(byte_data)  # Keep as PIL Image, no need to convert to NumPy array
     print("Screenshot converted to PIL Image.")
 
     # Coordinates for the region of interest
     x, y, w, h = monitored_regions["job_number"]
+    
     # Crop the region using PIL's crop method. Note: crop expects the second set of coordinates to be the bottom-right corner.
     job_number_region = screenshot.crop((x, y, x + w, y + h))
     print("Set read OCR region...")
