@@ -5,11 +5,9 @@ import io
 import cv2
 import time
 import numpy as np
-from PIL import Image, ImageFilter, ImageOps, ImageChops
-import pytesseract
+from PIL import Image
 import asyncio
-from ocr import read_job_no
-
+import pyperclip
 
 fp = "//Mac/Home/Documents/fujeasy/server/screenshots"
 
@@ -91,79 +89,11 @@ def get_look():
     print("Look not found, defaulting to standard")
     return "standard"
 
-
-def read_job_no(image) :
-
-    print("Reading job number...")
+def get_job_number():
     
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-
-    print("Tesseract path set...")
-    
-    print("Image object type:", type(image))
-    print("Image.size type:", type(image.size))
-
-    # Use the size attribute to get width and height
-    try:
-    # Assuming `image` is the PIL Image object
-        width, height = image.size
-        print("Image size: ", width, height)
-    except Exception as e:
-        print("Error accessing image size:", e)
-    
-    # Rescale the image, increasing its size by a factor (e.g., 2x, 3x, etc.)
-    factor = 10
-    new_size = (int(width * factor), int(height * factor))
-    image = image.resize(new_size, Image.ANTIALIAS)
-    
-    print("Image resized...")
-
-    # Apply Gaussian blur to create a low-pass filtered image
-    # The radius defines the strength of the blur
-    low_pass = image.filter(ImageFilter.GaussianBlur(radius=30))
-    
-    print("Low-pass filter applied...")
-
-    # Subtract the low-pass filtered image from the original image
-    # to achieve a high-pass filtered effect
-    image = ImageChops.subtract(image, low_pass)
-    
-    print("High-pass filter applied...")
-
-    #thresholding
-    threshold_value = 2
-    image = image.point(lambda p: p > threshold_value and 255)
-    
-    print("Thresholding applied...")
-
-    #invert image
-    image = ImageOps.invert(image)
-    
-    print("Image inverted...")
-
-    # Now pass the preprocessed image to pytesseract
-    job_no = pytesseract.image_to_string(image, config='-psm 7 nobatch digits')
-    
-    print("Job number read...")
-    
-    return(job_no)
-
-########### FIX ############
-
-def get_job_number(byte_data):
-    
-    print("Starting OCR for job number...")
-    screenshot = convert_bytes_to_image(byte_data)  # Keep as PIL Image, no need to convert to NumPy array
-    print("Screenshot converted to PIL Image.")
-
-    # Coordinates for the region of interest
-    x, y, w, h = monitored_regions["job_number"]
-    
-    # Crop the region using PIL's crop method. Note: crop expects the second set of coordinates to be the bottom-right corner.
-    job_number_region = screenshot.crop((x, y, x + w, y + h))
-    print("Set read OCR region...")
-
-    job_number = read_job_no(job_number_region)  # job_number_region is already a PIL Image, ready for OCR
+    pyautogui.doubleClick(75, 30)
+    pyautogui.hotkey('ctrl', 'c')
+    job_number = pyperclip.paste()    
     
     if job_number:
         print("Job Number:", job_number)
