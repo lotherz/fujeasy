@@ -112,7 +112,7 @@ def derive_settings():
         "border": 0 if compare_with_reference(screenshot, reference_images["border"], monitored_regions["border"], 0.999, 0) else 1,
         "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], monitored_regions["file_format"], threshold, 0) else "TIFF",
         "look": get_look(),
-        "job_number": get_job_number(screenshot)
+        "job_number": get_job_number()
         
         ########### FIX ############
     }
