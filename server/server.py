@@ -139,7 +139,7 @@ def read_job_no(image) :
     
     print("Image inverted...")
     
-    #image.save(r'C:\preprocessed_image.png')
+    image.save(r'C:\preprocessed_image.png')
 
     # Now pass the preprocessed image to pytesseract
     job_no = pytesseract.image_to_string(image, config='-psm 7 nobatch digits')
