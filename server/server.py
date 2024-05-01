@@ -141,9 +141,6 @@ def read_job_no(image) :
     image_np = 255 - image_np  # Invert image for better OCR
     image = Image.fromarray(image_np)
     print("Morphological operations applied...")
-
-    #invert image
-    image = ImageOps.invert(image)
     
     print("Image inverted...")
     
