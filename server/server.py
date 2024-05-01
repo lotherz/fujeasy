@@ -136,7 +136,7 @@ def read_job_no(image) :
     
     # Convert to NumPy array for OpenCV operations
     image_np = np.array(image)
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (4,4))
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (6,6))
     image_np = cv2.morphologyEx(image_np, cv2.MORPH_CLOSE, kernel, iterations=2)
     image_np = 255 - image_np  # Invert image for better OCR
     image = Image.fromarray(image_np)
