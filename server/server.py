@@ -112,7 +112,7 @@ def read_job_no(image) :
     # Rescale the image, increasing its size by a factor (e.g., 2x, 3x, etc.)
     factor = 4
     new_size = (int(width * factor), int(height * factor))
-    image = image.resize(new_size)
+    image = image.resize(new_size, )
     
     print("Image resized...")
 
@@ -133,6 +133,10 @@ def read_job_no(image) :
     image = image.point(lambda p: p > threshold_value and 255)
     
     print("Thresholding applied...")
+    
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+    close = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel, iterations=2)
+    image = 255 - close
 
     #invert image
     image = ImageOps.invert(image)
