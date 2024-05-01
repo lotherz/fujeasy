@@ -181,7 +181,8 @@ function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
             film_type: serverSettings.film_type, 
             border: serverSettings.border, 
             file_format: serverSettings.file_format,
-            look: serverSettings.look
+            look: serverSettings.look,
+            job_number: serverSettings.job_number
         };
 
         console.log('Received initial data from server:', serverSettings);
