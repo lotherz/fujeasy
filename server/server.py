@@ -110,15 +110,15 @@ def read_job_no(image) :
         print("Error accessing image size:", e)
     
     # Rescale the image, increasing its size by a factor (e.g., 2x, 3x, etc.)
-    factor = 3
+    factor = 4
     new_size = (int(width * factor), int(height * factor))
-    image = image.resize(new_size, Image.ANTIALIAS)
+    image = image.resize(new_size)
     
     print("Image resized...")
 
     # Apply Gaussian blur to create a low-pass filtered image
     # The radius defines the strength of the blur
-    low_pass = image.filter(ImageFilter.GaussianBlur(radius=20))
+    low_pass = image.filter(ImageFilter.GaussianBlur(radius=15))
     
     print("Low-pass filter applied...")
 
