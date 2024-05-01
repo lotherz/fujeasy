@@ -141,7 +141,7 @@ def read_job_no(image) :
     
     print("Image inverted...")
     
-    image.save(r'C:\preprocessed_image.png')
+    #image.save(r'C:\preprocessed_image.png')
 
     # Now pass the preprocessed image to pytesseract
     job_no = pytesseract.image_to_string(image, config='-psm 7 nobatch digits')
@@ -174,8 +174,6 @@ def get_job_number(byte_data):
         print("Job Number not found.")
         return
 
-########### FIX ############
-
 def derive_settings():
     screenshot = take_screenshot()
     threshold = 0.99
@@ -184,9 +182,7 @@ def derive_settings():
         "border": 0 if compare_with_reference(screenshot, reference_images["border"], monitored_regions["border"], 0.999, 0) else 1,
         "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], monitored_regions["file_format"], threshold, 0) else "TIFF",
         "look": get_look(),
-        "job_number": get_job_number(screenshot)
-        
-        ########### FIX ############
+        "job_number": get_job_number(screenshot)        
     }
     return settings
 
