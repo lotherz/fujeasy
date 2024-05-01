@@ -112,7 +112,7 @@ def read_job_no(image) :
     # Rescale the image, increasing its size by a factor (e.g., 2x, 3x, etc.)
     factor = 4
     new_size = (int(width * factor), int(height * factor))
-    image = image.resize(new_size, )
+    image = image.resize(new_size, Image.ANTIALIAS)
     
     print("Image resized...")
 
