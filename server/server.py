@@ -93,7 +93,7 @@ def get_job_number():
     
     pyautogui.doubleClick(75, 30)
     pyautogui.hotkey('ctrl', 'c')
-    job_number = pyperclip.paste()
+    job_number = pyperclip.paste()    
     
     if job_number:
         print("Job Number:", job_number)
