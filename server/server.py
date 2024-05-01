@@ -142,7 +142,7 @@ def read_job_no(image) :
     image.save(r'C:\preprocessed_image.png')
 
     # Now pass the preprocessed image to pytesseract
-    job_no = pytesseract.image_to_string(image, config='-psm 7 nobatch digits')
+    job_no = pytesseract.image_to_string(image, config='--psm 7 nobatch digits')
     
     print("Job number read...")
     
