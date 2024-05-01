@@ -97,7 +97,8 @@ def read_job_no(image) :
     threshold_value = 2
     kernel_size = 3
     morph_iterations = 2
-    pytesseract_config = '--psm 7 nobatch digits'
+    #pytesseract_config = '--psm 7 nobatch digits'
+    pytesseract_config = '--psm 7 digits'
 
     print("Reading job number...")
     
