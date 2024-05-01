@@ -131,7 +131,7 @@ def read_job_no(image) :
     print("High-pass filter applied...")
 
     #thresholding
-    threshold_value = 2
+    threshold_value = 1.5
     image = image.point(lambda p: p > threshold_value and 255)
     
     print("Thresholding applied...")
