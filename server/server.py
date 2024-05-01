@@ -90,7 +90,7 @@ def get_look():
     return "standard"
 
 
-def read_job_no(input_image) :
+def read_job_no(image) :
 
     print("Reading job number...")
     
