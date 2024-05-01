@@ -118,7 +118,7 @@ def read_job_no(image) :
 
     # Apply Gaussian blur to create a low-pass filtered image
     # The radius defines the strength of the blur
-    low_pass = image.filter(ImageFilter.GaussianBlur(radius=10))
+    low_pass = image.filter(ImageFilter.GaussianBlur(radius=20))
     
     print("Low-pass filter applied...")
 
@@ -129,7 +129,7 @@ def read_job_no(image) :
     print("High-pass filter applied...")
 
     #thresholding
-    threshold_value = 10
+    threshold_value = 2
     image = image.point(lambda p: p > threshold_value and 255)
     
     print("Thresholding applied...")
