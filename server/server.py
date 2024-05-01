@@ -110,7 +110,7 @@ def read_job_no(image) :
         print("Error accessing image size:", e)
     
     # Rescale the image, increasing its size by a factor (e.g., 2x, 3x, etc.)
-    factor = 20
+    factor = 10
     new_size = (int(width * factor), int(height * factor))
     image = image.resize(new_size, Image.ANTIALIAS)
     
@@ -118,7 +118,7 @@ def read_job_no(image) :
 
     # Apply Gaussian blur to create a low-pass filtered image
     # The radius defines the strength of the blur
-    low_pass = image.filter(ImageFilter.MedianFilter(size=7))
+    low_pass = image.filter(ImageFilter.GaussianBlur(radius=15))
     
     print("Low-pass filter applied...")
 
@@ -135,14 +135,14 @@ def read_job_no(image) :
     print("Thresholding applied...")
     
     # Convert to NumPy array for OpenCV operations
-   # image_np = np.array(image)
-    #kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
-    #image_np = cv2.morphologyEx(image_np, cv2.MORPH_CLOSE, kernel, iterations=2)
-    #image_np = 255 - image_np  # Invert image for better OCR
-    #image = Image.fromarray(image_np)
-    #print("Morphological operations applied...")
+    image_np = np.array(image)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+    image_np = cv2.morphologyEx(image_np, cv2.MORPH_CLOSE, kernel, iterations=2)
+    image_np = 255 - image_np  # Invert image for better OCR
+    image = Image.fromarray(image_np)
+    print("Morphological operations applied...")
     
-    #print("Image inverted...")
+    print("Image inverted...")
     
     image.save(r'C:\preprocessed_image.png')
 
