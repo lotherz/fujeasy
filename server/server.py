@@ -89,12 +89,11 @@ def get_look():
     print("Look not found, defaulting to standard")
     return "standard"
 
-
 def read_job_no(image) :
     
-    rescale_factor = 10
-    low_pass_radius = 20
-    threshold_value = 2
+    rescale_factor = 5
+    low_pass_radius = 10
+    threshold_value = 1
     kernel_size = 3
     morph_iterations = 2
     pytesseract_config = '--psm 7 digits'
