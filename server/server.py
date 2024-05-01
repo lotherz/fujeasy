@@ -89,65 +89,69 @@ def get_look():
     print("Look not found, defaulting to standard")
     return "standard"
 
-def read_job_no(image):
+
+def read_job_no(image) :
+
     print("Reading job number...")
     
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
     print("Tesseract path set...")
-
-    # Display initial image properties
+    
     print("Image object type:", type(image))
-    print("Image size: ", image.size)
+    print("Image.size type:", type(image.size))
 
-    # Get user input for scaling factor
-    factor = int(input("Enter the scaling factor (e.g., 2, 3, 10): "))
-    new_size = (int(image.width * factor), int(image.height * factor))
+    # Use the size attribute to get width and height
+    try:
+    # Assuming `image` is the PIL Image object
+        width, height = image.size
+        print("Image size: ", width, height)
+    except Exception as e:
+        print("Error accessing image size:", e)
+    
+    # Rescale the image, increasing its size by a factor (e.g., 2x, 3x, etc.)
+    factor = 10
+    new_size = (int(width * factor), int(height * factor))
     image = image.resize(new_size, Image.ANTIALIAS)
+    
     print("Image resized...")
 
-    # Get user input for Gaussian blur radius
-    blur_radius = int(input("Enter Gaussian blur radius (e.g., 5, 10, 15): "))
-    low_pass = image.filter(ImageFilter.GaussianBlur(radius=blur_radius))
+    # Apply Gaussian blur to create a low-pass filtered image
+    # The radius defines the strength of the blur
+    low_pass = image.filter(ImageFilter.GaussianBlur(radius=10))
+    
     print("Low-pass filter applied...")
 
-    # Apply high-pass filter by subtracting low-pass filtered image
+    # Subtract the low-pass filtered image from the original image
+    # to achieve a high-pass filtered effect
     image = ImageChops.subtract(image, low_pass)
+    
     print("High-pass filter applied...")
 
-    # Get user input for thresholding value
-    threshold_value = int(input("Enter threshold value (e.g., 1, 2, 3): "))
+    #thresholding
+    threshold_value = 2
     image = image.point(lambda p: p > threshold_value and 255)
-    print("Thresholding applied...")
-
-    # Get user input for kernel size and iterations for morphological operations
-    kernel_size = int(input("Enter kernel size (e.g., 3, 4, 5): "))
-    iterations = int(input("Enter number of iterations for morphological operations (e.g., 1, 2, 3): "))
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (kernel_size, kernel_size))
-    image_np = np.array(image)
-    image_np = cv2.morphologyEx(image_np, cv2.MORPH_CLOSE, kernel, iterations=iterations)
-    image_np = 255 - image_np  # Invert image
-    image = Image.fromarray(image_np)
-    print("Morphological operations applied and image inverted...")
-
-    # Save the preprocessed image (optional)
-    save_path = input("Enter full path to save the preprocessed image (leave blank to skip saving): ")
-    if save_path:
-        image.save(save_path)
-        print("Image saved to:", save_path)
-
-    # Perform OCR
-    job_no = pytesseract.image_to_string(image, config='--psm 7 digits')
-    print("Job number read:", job_no)
     
-    return job_no
+    print("Thresholding applied...")
+    
+    # Convert to NumPy array for OpenCV operations
+    image_np = np.array(image)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (4,4))
+    image_np = cv2.morphologyEx(image_np, cv2.MORPH_CLOSE, kernel, iterations=2)
+    image_np = 255 - image_np  # Invert image for better OCR
+    image = Image.fromarray(image_np)
+    print("Morphological operations applied...")
+    
+    print("Image inverted...")
+    
+    image.save(r'C:\preprocessed_image.png')
 
-# Example usage:
-# Load an image using PIL
-# image_path = 'path_to_your_image.jpg'
-# image = Image.open(image_path)
-# job_number = read_job_no(image)
-# print("Detected job number:", job_number)
-
+    # Now pass the preprocessed image to pytesseract
+    job_no = pytesseract.image_to_string(image, config='--psm 7 nobatch digits')
+    
+    print("Job number read...")
+    
+    return(job_no)
 
 def get_job_number(byte_data):
     
