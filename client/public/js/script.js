@@ -67,38 +67,45 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function handleServerMessage(message) {
-        switch (message) {
-            case 'Processing clicks, please wait...':
-            case 'All clicks processed':
-                advanceState();
-                break;
-            case 'Client and server settings are in sync':
-                advanceState(2)
-                break; // Add this break statement to prevent fall-through
-            case 'Server status: Awaiting Dark Correction':
-            case 'Server status: Barcode Dialogue Detected, Starting Scan':
-            case 'Server status: Accepted Film Position':
-            case 'Server status: Reading Image...':
-                if (stateIndex < 3) {
-                    toggleDivVisibility('scanning', state[stateIndex]);
-                    stateIndex = 3; // Set stateIndex to scanning
-                } else if (stateIndex === 4) { 
-                    toggleDivVisibility('scanning', state[stateIndex]);
-                    stateIndex = 3; // Set stateIndex to scanning
-                }
-                break;
-            case 'Server status: Incomplete Order, Insert More Film to Continue':
-                advanceState();
-                break;
-            case 'Server status: Scan Finished':
-                advanceState(2);
-                break;
-            case 'error':
-                showErrorState();
-                break;
-            default:
-                // Optionally handle other messages
-                break;
+
+        if (!message.startsWith('Job Number: ')) {
+            switch (message) {
+                case 'Processing clicks, please wait...':
+                case 'All clicks processed':
+                    advanceState();
+                    break;
+                case 'Client and server settings are in sync':
+                    advanceState(2)
+                    break; // Add this break statement to prevent fall-through
+                case 'Server status: Awaiting Dark Correction':
+                case 'Server status: Barcode Dialogue Detected, Starting Scan':
+                case 'Server status: Accepted Film Position':
+                case 'Server status: Reading Image...':
+                    if (stateIndex < 3) {
+                        toggleDivVisibility('scanning', state[stateIndex]);
+                        stateIndex = 3; // Set stateIndex to scanning
+                    } else if (stateIndex === 4) { 
+                        toggleDivVisibility('scanning', state[stateIndex]);
+                        stateIndex = 3; // Set stateIndex to scanning
+                    }
+                    break;
+                case 'Server status: Incomplete Order, Insert More Film to Continue':
+                    advanceState();
+                    break;
+                case 'Server status: Scan Finished':
+                    advanceState(2);
+                    break;
+                case 'error':
+                    showErrorState();
+                    break;
+                default:
+                    // Optionally handle other messages
+                    break;
+            }
+        } else {
+            // Handle job number message
+            let jobNumber = message.split('Job Number: ')[1];
+            console.log('Job Number: ', jobNumber);
         }
     }
     function showErrorState() {

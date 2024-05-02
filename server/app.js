@@ -25,6 +25,7 @@ let settings = {
     border: 0,
     file_format: "JPEG",
     look: "standard",
+    job_number: null
 };
 
 let serverSettings = null;
@@ -136,6 +137,7 @@ client.on('data', (data) => {
                 const statusObject = JSON.parse(statusData);
                 console.log('Server status: ', statusObject.status);
                 sendClientMessage('Server status: ' + statusObject.status);
+                
             } catch (e) {
                 console.error('Error parsing status JSON:', e);
             }
@@ -196,7 +198,8 @@ function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
         } else {
             console.log('\x1b[32m%s\x1b[0m', 'Client and server settings are in sync');
             sendClientMessage('Client and server settings are in sync');
-            serverSettings = settings;
+            settings.job_number = serverSettings.job_number;
+            sendClientMessage('Job Number: ' + settings.job_number);
             input();
         }
         accumulatedData = accumulatedData.slice(jsonEndIndex + '<END_OF_JSON>'.length);

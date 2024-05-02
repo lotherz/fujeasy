@@ -92,7 +92,7 @@ def get_look():
 def read_job_no(image) :
     
     rescale_factor = 5
-    low_pass_radius = 20
+    low_pass_radius = 10
     threshold_value = 1
     kernel_size = 3
     morph_iterations = 2
