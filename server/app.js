@@ -463,7 +463,7 @@ function handleCommand(command) {
             break;
         case 'export':
             // Example of using the imported function
-            exportImages('2700').then(() => {
+            exportImages(settings.job_number.toString()).then(() => {
                 console.log('All files copied successfully!');
             }).catch(err => {
                 console.error('Failed to copy files:', err);
