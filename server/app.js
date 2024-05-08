@@ -422,6 +422,71 @@ async function exportImages() {
     }
 }
 
+async function exportImages() {
+    const machineNo = '2'; // CHANGE THIS FOR EACH MACHINE !!!
+    const imgExchangeDir = `/Volumes/[D] FUJI SP500 - LAB #${machineNo}/Fujifilm/Shared/ImgExchange`;
+    const targetBaseDir = `/Users/sp500/Desktop/Export`;
+
+    try {
+        // Read the contents of the ImgExchange directory
+        const directories = await fs.readdir(imgExchangeDir, { withFileTypes: true });
+        const jobDirectories = directories
+            .filter(dirent => dirent.isDirectory() && dirent.name.endsWith('-1-4'))
+            .map(dirent => dirent.name);
+
+        // Find the newest directory by modification time
+        let newestDir = '';
+        let newestTime = 0;
+        for (let dir of jobDirectories) {
+            const dirPath = path.join(imgExchangeDir, dir);
+            const stats = await fs.stat(dirPath);
+            if (stats.mtimeMs > newestTime) {
+                newestTime = stats.mtimeMs;
+                newestDir = dir;
+            }
+        }
+
+        if (!newestDir) {
+            throw new Error("No suitable directory found.");
+        }
+
+        const jobNumber = newestDir.split('-')[0]; // Assuming the job number is the part before '-1-4'
+        const mainDir = path.join(imgExchangeDir, newestDir);
+        const targetDir = path.join(targetBaseDir, jobNumber);
+
+        // Ensure the target directory exists
+        await fs.access(targetDir).catch(async () => await fs.mkdir(targetDir, { recursive: true }));
+
+        // Navigate into the subdirectory within the newest directory
+        const subdirs = await fs.readdir(mainDir, { withFileTypes: true });
+        const firstSubdir = subdirs.find(dirent => dirent.isDirectory());
+        if (!firstSubdir) {
+            throw new Error("No subdirectory found in the selected job directory.");
+        }
+
+        const subDirPath = path.join(mainDir, firstSubdir.name);
+
+        // Get the list of files in the subdirectory
+        const files = await fs.readdir(subDirPath);
+
+        // Filter image files (JPEG, TIFF, BMP)
+        const imageFiles = files.filter(file => {
+            const ext = path.extname(file).toLowerCase();
+            return ext === '.jpg' || ext === '.jpeg' || ext === '.tiff' || ext === '.bmp';
+        });
+
+        // Copy each image file
+        for (let file of imageFiles) {
+            const sourcePath = path.join(subDirPath, file);
+            const targetPath = path.join(targetDir, file);
+            await fs.copyFile(sourcePath, targetPath);
+            console.log(`Copied '${file}' from '${subDirPath}' to '${targetDir}'`);
+        }
+    } catch (err) {
+        console.error(`Error: ${err.message}`);
+    }
+}
+
 function handleCommand(command) {
     switch (command) {
         case 'updateSettings':
