@@ -476,7 +476,6 @@ function handleCommand(command) {
             break;
         case 'export':
             // Example of using the imported function
-            console.log('Exporting images...', settings.job_number);
             exportImages().then(() => {
             //exportImages(settings.job_number.toString()).then(() => {
                 console.log('All files copied successfully!');
