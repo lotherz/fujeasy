@@ -482,6 +482,7 @@ function handleCommand(command) {
             }).catch(err => {
                 console.error('Failed to copy files:', err);
             });
+            break;
         default:
             console.log('\x1b[31m%s\x1b[0m', 'Invalid command');
             input();
