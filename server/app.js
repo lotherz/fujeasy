@@ -366,8 +366,8 @@ function scan(isScanning) {
 }
 
 async function exportImages(jobNumber) {
-    
-    const machineNo = '1'; // CHANGE THIS FOR EACH MACHINE !!!
+
+    const machineNo = '2'; // CHANGE THIS FOR EACH MACHINE !!!
 
     const mainDir = `/Volumes/[D] Fuji SP500 - LAB #${machineNo}/Fujifilm/Shared/ImgExchange/${jobNumber}-1-4`;
     const targetDir = `/Users/sp500/Desktop/Export/${jobNumber}`;
