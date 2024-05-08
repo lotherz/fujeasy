@@ -184,6 +184,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    let exportButton = document.querySelector('button[name="export"]');
+    if (exportButton) {
+        exportButton.addEventListener('click', function() {
+            socket.send(JSON.stringify({ command: 'export'}));
+        });
+    } else {
+        console.error('Button not found.');
+    }
+
     let backButton = document.querySelector('button[name="backToSettings"]');
     if (backButton) {
         backButton.addEventListener('click', backToSettings);

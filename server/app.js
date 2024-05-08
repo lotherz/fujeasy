@@ -1,7 +1,7 @@
 const net = require('net');
 const express = require('express');
 const http = require('http');
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 const readline = require('readline');
 const bodyParser = require('body-parser');
@@ -18,7 +18,6 @@ const port = 3000;
 let clickQueue = [];
 let isProcessingClicks = false;
 let accumulatedData = Buffer.alloc(0);
-let currentResponse = null;
 
 let settings = {
     film_type: "colour",
@@ -366,6 +365,46 @@ function scan(isScanning) {
     }
 }
 
+async function exportImages(jobNumber, targetDirectory) {
+    const mainDir = `/Users/kylelotherington/Desktop/ImgExchange/${jobNumber}-1-4`;
+
+    try {
+        // Check and create the target directory if it doesn't exist
+        await fs.access(targetDirectory).catch(async () => await fs.mkdir(targetDirectory, { recursive: true }));
+
+        // Read the contents of the main directory
+        const subdirectories = await fs.readdir(mainDir, { withFileTypes: true });
+
+        // Filter to get only directories, then select the first one
+        const firstSubDir = subdirectories.find(dirent => dirent.isDirectory());
+        if (!firstSubDir) {
+            throw new Error("No subdirectory found in the main directory.");
+        }
+
+        const subDirPath = path.join(mainDir, firstSubDir.name);
+
+        // Get the list of files in the first subdirectory
+        const files = await fs.readdir(subDirPath);
+
+        // Filter image files (JPEG, TIFF, BMP)
+        const imageFiles = files.filter(file => {
+            const ext = path.extname(file).toLowerCase();
+            return ext === '.jpg' || ext === '.jpeg' || ext === '.tiff' || ext === '.bmp';
+        });
+
+        // Copy each image file
+        for (let file of imageFiles) {
+            const sourcePath = path.join(subDirPath, file);
+            const targetPath = path.join(targetDirectory, file);
+            await fs.copyFile(sourcePath, targetPath);
+            console.log(`Copied '${file}' to '${targetDirectory}'`);
+            input();
+        }
+    } catch (err) {
+        console.error(`Error: ${err.message}`);
+    }
+}
+
 function handleCommand(command) {
     switch (command) {
         case 'updateSettings':
@@ -410,15 +449,21 @@ function handleCommand(command) {
                             settings = { film_type: film_type, look: look, border: parseInt(border), file_format: file_format };
                             input(); // Prompt for next command
                         });
-
                     });
                 });
             });
-            break;            
+            break;
         case 'exit':
             rl.close();
             client.end();
             break;
+        case 'export':
+            // Example of using the imported function
+            exportImages('2700', '/Users/kylelotherington/Desktop/Export').then(() => {
+                console.log('All files copied successfully!');
+            }).catch(err => {
+                console.error('Failed to copy files:', err);
+            });
         default:
             console.log('\x1b[31m%s\x1b[0m', 'Invalid command');
             input();
