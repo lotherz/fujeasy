@@ -365,12 +365,16 @@ function scan(isScanning) {
     }
 }
 
-async function exportImages(jobNumber, targetDirectory) {
-    const mainDir = `/Users/kylelotherington/Desktop/ImgExchange/${jobNumber}-1-4`;
+async function exportImages(jobNumber) {
+    
+    const machineNo = '1'; // CHANGE THIS FOR EACH MACHINE !!!
+
+    const mainDir = `/Volumes/[D] Fuji SP500 - LAB #${machineNo}/Fujifilm/Shared/ImgExchange/${jobNumber}-1-4`;
+    const targetDir = `/Users/sp500/Desktop/Export/${jobNumber}`;
 
     try {
         // Check and create the target directory if it doesn't exist
-        await fs.access(targetDirectory).catch(async () => await fs.mkdir(targetDirectory, { recursive: true }));
+        await fs.access(targetDir).catch(async () => await fs.mkdir(targetDir, { recursive: true }));
 
         // Read the contents of the main directory
         const subdirectories = await fs.readdir(mainDir, { withFileTypes: true });
@@ -395,9 +399,9 @@ async function exportImages(jobNumber, targetDirectory) {
         // Copy each image file
         for (let file of imageFiles) {
             const sourcePath = path.join(subDirPath, file);
-            const targetPath = path.join(targetDirectory, file);
+            const targetPath = path.join(targetDir, file);
             await fs.copyFile(sourcePath, targetPath);
-            console.log(`Copied '${file}' to '${targetDirectory}'`);
+            console.log(`Copied '${file}' to '${targetDir}'`);
             input();
         }
     } catch (err) {
@@ -459,7 +463,7 @@ function handleCommand(command) {
             break;
         case 'export':
             // Example of using the imported function
-            exportImages('2700', '/Users/kylelotherington/Desktop/Export').then(() => {
+            exportImages('2700').then(() => {
                 console.log('All files copied successfully!');
             }).catch(err => {
                 console.error('Failed to copy files:', err);
