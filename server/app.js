@@ -5,6 +5,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const readline = require('readline');
 const bodyParser = require('body-parser');
+const { exec } = require('child_process');
 
 const app = express();
 const server = http.createServer(app);
@@ -23,8 +24,7 @@ let settings = {
     film_type: "colour",
     border: 0,
     file_format: "JPEG",
-    look: "standard",
-    job_number: null
+    look: "standard"
 };
 
 let serverSettings = null;
@@ -181,8 +181,7 @@ function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
             film_type: serverSettings.film_type, 
             border: serverSettings.border, 
             file_format: serverSettings.file_format,
-            look: serverSettings.look,
-            job_number: serverSettings.job_number
+            look: serverSettings.look
         };
 
         console.log('Received initial data from server:', serverSettings);
@@ -198,9 +197,6 @@ function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
             sendClientMessage('Client and server settings are in sync');
             input();
         }
-
-        settings.job_number = serverSettings.job_number;
-        sendClientMessage('Job Number: ' + settings.job_number);
 
         accumulatedData = accumulatedData.slice(jsonEndIndex + '<END_OF_JSON>'.length);
     } catch (e) {
@@ -365,11 +361,11 @@ function scan(isScanning) {
     }
 }
 
+const targetBaseDir = `/Users/sp500/Desktop/Export`;
 
 async function exportImages() {
     const machineNo = '2'; // CHANGE THIS FOR EACH MACHINE !!!
     const imgExchangeDir = `/Volumes/[D] FUJI SP500 - LAB #${machineNo}/Fujifilm/Shared/ImgExchange`;
-    const targetBaseDir = `/Users/sp500/Desktop/Export`;
 
     try {
         // Read the contents of the ImgExchange directory
@@ -417,6 +413,7 @@ async function exportImages() {
             await fs.copyFile(sourcePath, targetPath);
             console.log(`Copied '${file}' from '${newestDir}' to '${targetDir}'`);
         }
+
     } catch (err) {
         console.error(`Error: ${err.message}`);
     }
@@ -487,6 +484,20 @@ async function exportImages() {
     }
 }
 
+// Function to open Finder at a specific path
+function openFinder(path) {
+    exec(`open -a Finder "${path}"`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`exec error: ${error}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`stderr: ${stderr}`);
+        }
+        console.log(`stdout: ${stdout}`);
+    });
+}
+
 function handleCommand(command) {
     switch (command) {
         case 'updateSettings':
@@ -540,10 +551,9 @@ function handleCommand(command) {
             client.end();
             break;
         case 'export':
-            // Example of using the imported function
             exportImages().then(() => {
-            //exportImages(settings.job_number.toString()).then(() => {
                 console.log('All files copied successfully!');
+                openFinder(targetBaseDir);
             }).catch(err => {
                 console.error('Failed to copy files:', err);
             });

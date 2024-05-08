@@ -7,7 +7,6 @@ import time
 import numpy as np
 from PIL import Image, ImageFilter, ImageOps, ImageChops
 import asyncio
-import pytesseract
 
 fp = "//Mac/Home/Documents/fujeasy/server/screenshots"
 
@@ -32,7 +31,6 @@ reference_images = {
 }
 
 monitored_regions = {
-    "job_number":               (56, 25, 35, 11),
     "film_type":                (240, 146, 117, 68),
     "border":                   (386, 146, 168, 68),
     "file_format":              (386, 376, 116, 67), 
@@ -89,96 +87,6 @@ def get_look():
     print("Look not found, defaulting to standard")
     return "standard"
 
-def read_job_no(image) :
-    
-    rescale_factor = 5
-    low_pass_radius = 20
-    threshold_value = 1
-    kernel_size = 3
-    morph_iterations = 2
-    pytesseract_config = '--psm 7 digits'
-
-    print("Reading job number...")
-    
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-
-    print("Tesseract path set...")
-    
-    print("Image object type:", type(image))
-    print("Image.size type:", type(image.size))
-
-    # Use the size attribute to get width and height
-    try:
-    # Assuming `image` is the PIL Image object
-        width, height = image.size
-        print("Image size: ", width, height)
-    except Exception as e:
-        print("Error accessing image size:", e)
-    
-    # Rescale the image, increasing its size by a factor (e.g., 2x, 3x, etc.)
-    new_size = (int(width * rescale_factor), int(height * rescale_factor))
-    image = image.resize(new_size, Image.ANTIALIAS)
-    
-    print("Image resized...")
-
-    # Apply Gaussian blur to create a low-pass filtered image
-    # The radius defines the strength of the blur
-    low_pass = image.filter(ImageFilter.GaussianBlur(radius = low_pass_radius))
-    
-    print("Low-pass filter applied...")
-
-    # Subtract the low-pass filtered image from the original image
-    # to achieve a high-pass filtered effect
-    image = ImageChops.subtract(image, low_pass)
-    
-    print("High-pass filter applied...")
-
-    #thresholding
-    image = image.point(lambda p: p > threshold_value and 255)
-    
-    print("Thresholding applied...")
-    
-    # Convert to NumPy array for OpenCV operations
-    image_np = np.array(image)
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (kernel_size,kernel_size))
-    image_np = cv2.morphologyEx(image_np, cv2.MORPH_CLOSE, kernel, iterations = morph_iterations)
-    image_np = 255 - image_np  # Invert image for better OCR
-    image = Image.fromarray(image_np)
-    print("Morphological operations applied...")
-    
-    print("Image inverted...")
-    
-    image.save(r'C:\preprocessed_image.png')
-
-    # Now pass the preprocessed image to pytesseract
-    job_no = pytesseract.image_to_string(image, config=pytesseract_config)
-    
-    print("Job number read...")
-    
-    return(job_no)
-
-def get_job_number(byte_data):
-    
-    print("Starting OCR for job number...")
-    screenshot = convert_bytes_to_image(byte_data)  # Keep as PIL Image, no need to convert to NumPy array
-    print("Screenshot converted to PIL Image.")
-
-    # Coordinates for the region of interest
-    x, y, w, h = monitored_regions["job_number"]
-    
-    # Crop the region using PIL's crop method. Note: crop expects the second set of coordinates to be the bottom-right corner.
-    job_number_region = screenshot.crop((x, y, x + w, y + h))
-    print("Set read OCR region...")
-
-    job_number = read_job_no(job_number_region)  # job_number_region is already a PIL Image, ready for OCR
-    
-    if job_number:
-        print("Job Number:", job_number)
-        return job_number
-    else:
-        print("Job Number not found.")
-        return
-
 def derive_settings():
     screenshot = take_screenshot()
     threshold = 0.99
@@ -186,8 +94,7 @@ def derive_settings():
         "film_type": "colour" if compare_with_reference(screenshot, reference_images["film_type"], monitored_regions["film_type"], threshold, 0) else "bw",
         "border": 0 if compare_with_reference(screenshot, reference_images["border"], monitored_regions["border"], 0.999, 0) else 1,
         "file_format": "JPEG" if compare_with_reference(screenshot, reference_images["file_format"], monitored_regions["file_format"], threshold, 0) else "TIFF",
-        "look": get_look(),
-        "job_number": get_job_number(screenshot)        
+        "look": get_look()
     }
     return settings
 
