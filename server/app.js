@@ -365,30 +365,44 @@ function scan(isScanning) {
     }
 }
 
-async function exportImages(jobNumber) {
 
+async function exportImages() {
     const machineNo = '2'; // CHANGE THIS FOR EACH MACHINE !!!
-
-    const mainDir = `/Volumes/[D] FUJI SP500 - LAB #${machineNo}/Fujifilm/Shared/ImgExchange/${jobNumber}-1-4`;
-    const targetDir = `/Users/sp500/Desktop/Export/${jobNumber}`;
+    const imgExchangeDir = `/Volumes/[D] FUJI SP500 - LAB #${machineNo}/Fujifilm/Shared/ImgExchange`;
+    const targetBaseDir = `/Users/sp500/Desktop/Export`;
 
     try {
-        // Check and create the target directory if it doesn't exist
-        await fs.access(targetDir).catch(async () => await fs.mkdir(targetDir, { recursive: true }));
+        // Read the contents of the ImgExchange directory
+        const directories = await fs.readdir(imgExchangeDir, { withFileTypes: true });
+        const jobDirectories = directories
+            .filter(dirent => dirent.isDirectory() && dirent.name.endsWith('-1-4'))
+            .map(dirent => dirent.name);
 
-        // Read the contents of the main directory
-        const subdirectories = await fs.readdir(mainDir, { withFileTypes: true });
-
-        // Filter to get only directories, then select the first one
-        const firstSubDir = subdirectories.find(dirent => dirent.isDirectory());
-        if (!firstSubDir) {
-            throw new Error("No subdirectory found in the main directory.");
+        // Find the newest directory by modification time
+        let newestDir = '';
+        let newestTime = 0;
+        for (let dir of jobDirectories) {
+            const dirPath = path.join(imgExchangeDir, dir);
+            const stats = await fs.stat(dirPath);
+            if (stats.mtimeMs > newestTime) {
+                newestTime = stats.mtimeMs;
+                newestDir = dir;
+            }
         }
 
-        const subDirPath = path.join(mainDir, firstSubDir.name);
+        if (!newestDir) {
+            throw new Error("No suitable directory found.");
+        }
 
-        // Get the list of files in the first subdirectory
-        const files = await fs.readdir(subDirPath);
+        const jobNumber = newestDir.split('-')[0]; // Assuming the job number is the part before '-1-4'
+        const mainDir = path.join(imgExchangeDir, newestDir);
+        const targetDir = path.join(targetBaseDir, jobNumber);
+
+        // Ensure the target directory exists
+        await fs.access(targetDir).catch(async () => await fs.mkdir(targetDir, { recursive: true }));
+
+        // Get the list of files in the newest directory
+        const files = await fs.readdir(mainDir);
 
         // Filter image files (JPEG, TIFF, BMP)
         const imageFiles = files.filter(file => {
@@ -398,11 +412,10 @@ async function exportImages(jobNumber) {
 
         // Copy each image file
         for (let file of imageFiles) {
-            const sourcePath = path.join(subDirPath, file);
+            const sourcePath = path.join(mainDir, file);
             const targetPath = path.join(targetDir, file);
             await fs.copyFile(sourcePath, targetPath);
-            console.log(`Copied '${file}' to '${targetDir}'`);
-            input();
+            console.log(`Copied '${file}' from '${newestDir}' to '${targetDir}'`);
         }
     } catch (err) {
         console.error(`Error: ${err.message}`);
@@ -464,7 +477,8 @@ function handleCommand(command) {
         case 'export':
             // Example of using the imported function
             console.log('Exporting images...', settings.job_number);
-            exportImages(settings.job_number.toString()).then(() => {
+            exportImages().then(() => {
+            //exportImages(settings.job_number.toString()).then(() => {
                 console.log('All files copied successfully!');
             }).catch(err => {
                 console.error('Failed to copy files:', err);
