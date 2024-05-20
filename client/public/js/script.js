@@ -67,6 +67,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    const filmPositonReq = 0;
+
     function handleServerMessage(message) {
 
         if (!message.startsWith('Job Number: ')) {
@@ -80,15 +82,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     break;
                 case 'Server status: Film Position Required':
                     showFilmPositionState();
+                    filmPositonReq = 1;
                     break;
                 case 'Server status: Awaiting Dark Correction':
                 case 'Server status: Barcode Dialogue Detected, Starting Scan':
                 case 'Server status: Reading Image...':
-                    if (stateIndex < 4) {
-                        toggleDivVisibility('scanning', state[stateIndex]);
-                        stateIndex = 4; // Set stateIndex to scanning
-                    } else if (stateIndex === 4) { 
-                        toggleDivVisibility('scanning', state[stateIndex]);
+                    if (stateIndex < 4 || stateIndex === 4) {
+                        filmPositonReq == 0 ? toggleDivVisibility('scanning', state[stateIndex]) : toggleDivVisibility('filmposition', state[stateIndex]);
                         stateIndex = 4; // Set stateIndex to scanning
                     }
                     break;
