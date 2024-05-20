@@ -188,7 +188,7 @@ def continuous_film_monitoring(client_socket):
                 "scan_finished": ("Scan Finished", None)
             }
             for dialogue, (state, click_position) in dialogues.items():
-                if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance, 1):
+                if compare_with_reference(screenshot, reference_images[dialogue], monitored_regions[dialogue], tolerance, 0):
                     detected_state = state
                     
                     if detected_state == "Scan Finished" and last_state != "Processing...":
