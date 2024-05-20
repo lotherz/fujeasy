@@ -36,7 +36,7 @@ monitored_regions = {
     "file_format":              (386, 376, 116, 67), 
     "look_dropdown":            (365, 294, 7, 10),
     "film_insert_dialogue":     (171, 206, 458, 189),
-    "film_position_dialogue":   (145, 445, 510, 88),
+    "film_position_dialogue":   (148, 71, 144, 18),
     "barcode_dialogue":         (189, 202, 214, 95),
     "dark_correction":          (189, 202, 214, 95),
     "incomplete_order":         (2, 499, 563, 35),
