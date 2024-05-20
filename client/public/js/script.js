@@ -81,14 +81,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     advanceState(2)
                     break;
                 case 'Server status: Film Position Required':
-                    showFilmPositionState();
-                    filmPositonReq = 1;
+                    toggleDivVisibility('filmposition', state[stateIndex]);
+                    stateIndex = 3; // Set stateIndex to filmposition
                     break;
                 case 'Server status: Awaiting Dark Correction':
                 case 'Server status: Barcode Dialogue Detected, Starting Scan':
                 case 'Server status: Reading Image...':
-                    if (stateIndex < 4 || stateIndex === 4) {
-                        filmPositonReq == 0 ? toggleDivVisibility('scanning', state[stateIndex]) : toggleDivVisibility('filmposition', state[stateIndex]);
+                    if (stateIndex <= 4) {
+                        toggleDivVisibility('scanning', state[stateIndex]);
                         stateIndex = 4; // Set stateIndex to scanning
                     }
                     break;
@@ -99,7 +99,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     advanceState(2);
                     break;
                 case 'error':
-                    showErrorState();
                     break;
                 default:
                     // Optionally handle other messages
@@ -110,14 +109,6 @@ document.addEventListener('DOMContentLoaded', function () {
             let jobNumber = message.split('Job Number: ')[1];
             console.log('Job Number: ', jobNumber);
         }
-    }
-    function showErrorState() {
-        toggleDivVisibility('errorDiv', state[stateIndex]);
-        // Optionally reset or handle the error state differently
-    }
-
-    function showFilmPositionState() {
-        toggleDivVisibility('positionfilm', state[stateIndex]);
     }
 
     function toggleDivVisibility(showDivId, hideDivId) {
