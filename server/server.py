@@ -40,7 +40,7 @@ monitored_regions = {
     "barcode_dialogue":         (189, 202, 214, 95),
     "dark_correction":          (189, 202, 214, 95),
     "incomplete_order":         (2, 499, 563, 35),
-    "film_reversed":            (189, 202, 92, 61),
+    "film_reversed":            (160, 159, 480, 282),
     "processing":               (113, 217, 575, 167),
     "processing_greyed":        (113, 217, 575, 167),
     "reading_image":            (113, 217, 575, 167),
