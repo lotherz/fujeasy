@@ -202,7 +202,7 @@ function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
     }
 }
 
-function handleImageData(imageHeaderIndex, imageEndIndex) {
+/*function handleImageData(imageHeaderIndex, imageEndIndex) {
     // Find the index where the actual image data starts (after 'ENDSIZE\n')
     const imageDataStartIndex = accumulatedData.indexOf('\nENDSIZE\n', imageHeaderIndex) + '\nENDSIZE\n'.length;
 
@@ -218,7 +218,7 @@ function handleImageData(imageHeaderIndex, imageEndIndex) {
         const imageData = accumulatedData.slice(imageDataStartIndex, imageEndIndex);
 
         // Write the binary data to a file
-        fs.writeFileSync('screenshots/screenshot.png', imageData, { encoding: 'binary' });
+        fs.writeFileSync('../client/public/img/screenshot.png', imageData, { encoding: 'binary' });
         console.log('\x1b[32m%s\x1b[0m', 'Image written to file.');
 
         // Clear processed image data from buffer
@@ -226,8 +226,38 @@ function handleImageData(imageHeaderIndex, imageEndIndex) {
     } catch (e) {
         console.error('Error processing image data:', e);
     }
-}
+}*/
 
+function handleImageData(imageHeaderIndex, imageEndIndex) {
+    // Find the index where the actual image data starts (after 'ENDSIZE\n')
+    const imageDataStartIndex = accumulatedData.indexOf('\nENDSIZE\n', imageHeaderIndex) + '\nENDSIZE\n'.length;
+
+    if (imageDataStartIndex === -1 || imageDataStartIndex >= imageEndIndex) {
+        console.log("Incomplete image data. Awaiting more data...");
+        return;
+    }
+
+    try {
+        console.log("Processing image data...");
+
+        // Extract the actual image data (binary data) from the buffer
+        const imageData = accumulatedData.slice(imageDataStartIndex, imageEndIndex);
+
+        // Send image data over WebSocket to all connected clients
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(imageData); // send as binary data
+            }
+        });
+
+        console.log('Image data sent to clients.');
+
+        // Clear processed image data from buffer
+        accumulatedData = accumulatedData.slice(imageEndIndex + '<END_OF_IMAGE>'.length);
+    } catch (e) {
+        console.error('Error processing image data:', e);
+    }
+}
 
 function requestserverSettings(s) {
     client.write(JSON.stringify({ type: 'get_settings' }) + '<END_OF_JSON>');

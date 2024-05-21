@@ -1,14 +1,3 @@
-let state = [
-    "settings",
-    "loading",
-    "insertfilm",
-    "filmposition",
-    "scanning",
-    "scanningincomplete",
-    "scanningcomplete"
-];
-let stateIndex = 0;
-
 function updateLookRadiosBasedOnFilmType() {
     // Get all radio buttons with the name 'film_type'
     let filmTypeRadios = document.querySelectorAll('input[name="film_type"]');
@@ -39,9 +28,21 @@ function updateLookRadiosBasedOnFilmType() {
 
 document.addEventListener('DOMContentLoaded', function () {
 
+    let state = [
+        "settings",
+        "loading",
+        "insertfilm",
+        "filmposition",
+        "scanning",
+        "scanningincomplete",
+        "scanningcomplete"
+    ];
+    let stateIndex = 0;
+
     updateLookRadiosBasedOnFilmType();
     
     let socket = new WebSocket('ws://localhost:3000');
+    socket.binaryType = 'blob'; // Set binary type to receive Blob data
 
     socket.onopen = function(event) {
         console.log("Connected to WebSocket server");
@@ -52,12 +53,18 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     socket.onmessage = function(event) {
-        const responseData = JSON.parse(event.data);
-        console.log("Message from server:", responseData.message);
-
-        handleServerMessage(responseData.message);
+        if (event.data instanceof Blob) {
+            // Handle Blob data, assume it's an image
+            const url = URL.createObjectURL(event.data);
+            document.getElementById('live-image').src = url;
+        } else {
+            // Handle JSON data
+            const responseData = JSON.parse(event.data);
+            console.log("Message from server:", responseData.message);
+            handleServerMessage(responseData.message);
+        }
     };
-
+    
     function advanceState(amount) {
         const advanceAmount = amount || 1; // Default to 1 if amount is not provided
         if (stateIndex < state.length - advanceAmount) {
@@ -66,8 +73,6 @@ document.addEventListener('DOMContentLoaded', function () {
             //console.log('State index:', stateIndex);
         }
     }
-
-    const filmPositonReq = 0;
 
     function handleServerMessage(message) {
 
@@ -82,6 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     break;
                 case 'Server status: Film Position Required':
                     toggleDivVisibility('filmposition', state[stateIndex]);
+                    socket.send(JSON.stringify({ command: 'screenshot'}));
                     stateIndex = 3; // Set stateIndex to filmposition
                     break;
                 case 'Server status: Awaiting Dark Correction':
