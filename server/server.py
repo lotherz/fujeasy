@@ -181,7 +181,7 @@ def continuous_film_monitoring(client_socket):
                 "film_position_dialogue": ("Film Position Required", None),
                 "barcode_dialogue": ("Barcode Dialogue Detected, Starting Scan", (575, 420)),
                 "incomplete_order": ("Incomplete Order, Insert More Film to Continue", None),
-                "film_reversed": ("Film is Reversed, Please Flip the Film", (575, 420)),
+                "film_reversed": ("Film is Reversed, Please Flip the Film", None),
                 "reading_image": ("Reading Image...", None),
                 "grid_view": ("Progressing Scan...", (745, 515)),
                 "processing": ("Processing...", None),

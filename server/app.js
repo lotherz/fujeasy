@@ -1,7 +1,8 @@
 const net = require('net');
 const express = require('express');
 const http = require('http');
-const fs = require('fs').promises;
+const fs = require('fs');
+const fsp = fs.promises;
 const path = require('path');
 const readline = require('readline');
 const bodyParser = require('body-parser');
@@ -170,10 +171,8 @@ client.on('data', (data) => {
     }
 });
 
-
 function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
     try {
-
         const jsonData = accumulatedData.slice(jsonHeaderIndex + 'JSON\n'.length, jsonEndIndex).toString();
         let serverSettings = JSON.parse(jsonData);
 
@@ -185,7 +184,6 @@ function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
         };
 
         console.log('Received initial data from server:', serverSettings);
-        //console.log('Comparing to client settings: ', settings)
 
         if (settings.film_type !== serverSettings.film_type || 
             settings.border !== serverSettings.border || 
@@ -204,12 +202,11 @@ function handleJsonData(jsonHeaderIndex, jsonEndIndex) {
     }
 }
 
-function handleImageData() {
+function handleImageData(imageHeaderIndex, imageEndIndex) {
     // Find the index where the actual image data starts (after 'ENDSIZE\n')
-    const imageDataStartIndex = accumulatedData.indexOf('\nENDSIZE\n') + '\nENDSIZE\n'.length;
-    const imageDataEndIndex = accumulatedData.indexOf('<END_OF_IMAGE>');
+    const imageDataStartIndex = accumulatedData.indexOf('\nENDSIZE\n', imageHeaderIndex) + '\nENDSIZE\n'.length;
 
-    if (imageDataStartIndex === -1 || imageDataEndIndex === -1 || imageDataStartIndex >= imageDataEndIndex) {
+    if (imageDataStartIndex === -1 || imageDataStartIndex >= imageEndIndex) {
         console.log("Incomplete image data. Awaiting more data...");
         return;
     }
@@ -218,18 +215,19 @@ function handleImageData() {
         console.log("Processing image data...");
 
         // Extract the actual image data (binary data) from the buffer
-        const imageData = accumulatedData.slice(imageDataStartIndex, imageDataEndIndex);
+        const imageData = accumulatedData.slice(imageDataStartIndex, imageEndIndex);
 
         // Write the binary data to a file
         fs.writeFileSync('screenshots/screenshot.png', imageData, { encoding: 'binary' });
         console.log('\x1b[32m%s\x1b[0m', 'Image written to file.');
 
         // Clear processed image data from buffer
-        accumulatedData = accumulatedData.slice(imageDataEndIndex + '<END_OF_IMAGE>'.length);
+        accumulatedData = accumulatedData.slice(imageEndIndex + '<END_OF_IMAGE>'.length);
     } catch (e) {
         console.error('Error processing image data:', e);
     }
 }
+
 
 function requestserverSettings(s) {
     client.write(JSON.stringify({ type: 'get_settings' }) + '<END_OF_JSON>');
@@ -369,7 +367,7 @@ async function exportImages() {
 
     try {
         // Read the contents of the ImgExchange directory
-        const directories = await fs.readdir(imgExchangeDir, { withFileTypes: true });
+        const directories = await fsp.readdir(imgExchangeDir, { withFileTypes: true });
         const jobDirectories = directories
             .filter(dirent => dirent.isDirectory() && dirent.name.endsWith('-1-4'))
             .map(dirent => dirent.name);
@@ -379,7 +377,7 @@ async function exportImages() {
         let newestTime = 0;
         for (let dir of jobDirectories) {
             const dirPath = path.join(imgExchangeDir, dir);
-            const stats = await fs.stat(dirPath);
+            const stats = await fsp.stat(dirPath);
             if (stats.mtimeMs > newestTime) {
                 newestTime = stats.mtimeMs;
                 newestDir = dir;
@@ -395,10 +393,10 @@ async function exportImages() {
         const targetDir = path.join(targetBaseDir, jobNumber);
 
         // Ensure the target directory exists
-        await fs.access(targetDir).catch(async () => await fs.mkdir(targetDir, { recursive: true }));
+        await fsp.access(targetDir).catch(async () => await fsp.mkdir(targetDir, { recursive: true }));
 
         // Get the list of files in the newest directory
-        const files = await fs.readdir(mainDir);
+        const files = await fsp.readdir(mainDir);
 
         // Filter image files (JPEG, TIFF, BMP)
         const imageFiles = files.filter(file => {
@@ -410,7 +408,7 @@ async function exportImages() {
         for (let file of imageFiles) {
             const sourcePath = path.join(mainDir, file);
             const targetPath = path.join(targetDir, file);
-            await fs.copyFile(sourcePath, targetPath);
+            await fsp.copyFile(sourcePath, targetPath);
             console.log(`Copied '${file}' from '${newestDir}' to '${targetDir}'`);
         }
 
@@ -426,7 +424,7 @@ async function exportImages() {
 
     try {
         // Read the contents of the ImgExchange directory
-        const directories = await fs.readdir(imgExchangeDir, { withFileTypes: true });
+        const directories = await fsp.readdir(imgExchangeDir, { withFileTypes: true });
         const jobDirectories = directories
             .filter(dirent => dirent.isDirectory() && dirent.name.endsWith('-1-4'))
             .map(dirent => dirent.name);
@@ -455,7 +453,7 @@ async function exportImages() {
         await fs.access(targetDir).catch(async () => await fs.mkdir(targetDir, { recursive: true }));
 
         // Navigate into the subdirectory within the newest directory
-        const subdirs = await fs.readdir(mainDir, { withFileTypes: true });
+        const subdirs = await fsp.readdir(mainDir, { withFileTypes: true });
         const firstSubdir = subdirs.find(dirent => dirent.isDirectory());
         if (!firstSubdir) {
             throw new Error("No subdirectory found in the selected job directory.");
@@ -464,7 +462,7 @@ async function exportImages() {
         const subDirPath = path.join(mainDir, firstSubdir.name);
 
         // Get the list of files in the subdirectory
-        const files = await fs.readdir(subDirPath);
+        const files = await fsp.readdir(subDirPath);
 
         // Filter image files (JPEG, TIFF, BMP)
         const imageFiles = files.filter(file => {
@@ -476,7 +474,7 @@ async function exportImages() {
         for (let file of imageFiles) {
             const sourcePath = path.join(subDirPath, file);
             const targetPath = path.join(targetDir, file);
-            await fs.copyFile(sourcePath, targetPath);
+            await fsp.copyFile(sourcePath, targetPath);
             console.log(`Copied '${file}' from '${subDirPath}' to '${targetDir}'`);
         }
     } catch (err) {
