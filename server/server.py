@@ -268,7 +268,7 @@ def handle_client(client_socket):
 @asyncio.coroutine
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind(('0.0.0.0', 8080))
+    server_socket.bind(('192.168.0.21', 8080))
     print("Server started on port 8080")
     server_socket.listen(5)
     server_socket.setblocking(False)  # Set the socket to non-blocking

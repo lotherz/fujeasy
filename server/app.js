@@ -263,7 +263,7 @@ function requestserverSettings(s) {
     client.write(JSON.stringify({ type: 'get_settings' }) + '<END_OF_JSON>');
 }
 
-client.connect(8080, '192.168.0.20', () => {
+client.connect(8080, '192.168.0.21', () => {
     console.log('Connected to VM');
     input();
 });
