@@ -244,41 +244,41 @@ def handle_client(client_socket):
         buffer = ""
         while True:
             # Print before attempting to receive data
-            print("Waiting to receive data from client...")
+            print("HANDLE_CLIENT: Waiting to receive data from client...")
 
             data = yield from loop.sock_recv(client_socket, 1024)
             if not data:
-                print("No more data received. Closing connection.")
+                print("HANDLE_CLIENT: No more data received. Closing connection.")
                 break
 
             # Print the raw data received
-            print("Received raw data:", data)
+            print("HANDLE_CLIENT: Received raw data:", data)
 
             buffer += data.decode('utf-8')
 
             # Print the current buffer state
-            print("Current buffer state:", buffer)
+            print("HANDLE_CLIENT: Current buffer state:", buffer)
 
             if "<END_OF_JSON>" in buffer:
                 parts = buffer.split("<END_OF_JSON>")
                 for part in parts[:-1]:
                     try:
                         # Print before processing each command
-                        print("Processing command:", part)
+                        print("HANDLE_CLIENT: Processing command:", part)
                         command = json.loads(part)
                         yield from process_command(command, client_socket)
                         # Print after successfully processing the command
-                        print("Successfully processed command:", command)
+                        print("HANDLE_CLIENT: Successfully processed command:", command)
                     except ValueError as e:
-                        print("Error processing JSON data:", e)
+                        print("HANDLE_CLIENT: Error processing JSON data:", e)
                 buffer = parts[-1]  # Retain the remaining part for the next loop iteration
 
     except Exception as e:
-        print("Error handling client:", e)
+        print("HANDLE_CLIENT: Error handling client:", e)
 
     finally:
         client_socket.close()
-        print("Connection closed.")
+        print("HANDLE_CLIENT: Connection closed.")
 
 
 @asyncio.coroutine
