@@ -55,6 +55,11 @@ const clickLocations = {
     'look_soft': [[85, 520], [400, 300], [416, 369], [550, 300]],
     'look_standard': [[85, 520], [400, 300], [416, 383], [550, 300]],
     'look_rich': [[85, 520], [400, 300], [416, 400], [550, 300]],
+    'filmPosLeft': [[245, 500]],
+    'filmPosJumpLeft': [[290, 500]],
+    'filmPosJumpRight': [[335, 500]],
+    'filmPosRight': [[380, 500]],
+    'filmPositionSelected': [[570, 500]]
 };
 
 wss.on('connection', (ws) => {
@@ -585,6 +590,30 @@ function handleCommand(command) {
             }).catch(err => {
                 console.error('Failed to copy files:', err);
             });
+            break;
+        case 'filmPosJumpLeft':
+            console.log('Film position jump left');
+            sendClick(clickLocations.filmPosJumpLeft[0][0], clickLocations.filmPosJumpLeft[0][1]);
+            requestScreenshot();
+            break;
+        case 'filmPosLeft':
+            console.log('Film position left');
+            sendClick(clickLocations.filmPosLeft[0][0], clickLocations.filmPosLeft[0][1]);
+            requestScreenshot();
+            break;
+        case 'filmPosJumpRight':
+            console.log('Film position jump right');
+            sendClick(clickLocations.filmPosJumpRight[0][0], clickLocations.filmPosJumpRight[0][1]);
+            requestScreenshot();
+            break;
+        case 'filmPosRight':
+            console.log('Film position right');
+            sendClick(clickLocations.filmPosRight[0][0], clickLocations.filmPosRight[0][1]);
+            requestScreenshot();
+            break;
+        case 'filmPosSelected':
+            console.log('Film position selected');
+            sendClick(clickLocations.filmPositionSelected[0][0], clickLocations.filmPositionSelected[0][1]);
             break;
         default:
             console.log('\x1b[31m%s\x1b[0m', 'Invalid command');

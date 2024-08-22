@@ -87,3 +87,7 @@ button:hover {
   grid-template-rows: repeat(2, 8vh);
   grid-gap: 1em;
 }
+
+#filmposition button {
+  width: auto;
+}

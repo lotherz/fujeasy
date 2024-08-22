@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     advanceState();
                     break;
                 case 'Client and server settings are in sync':
-                    advanceState(2)
+                    advanceState(2);
                     break;
                 case 'Server status: Film Position Required':
                     toggleDivVisibility('filmposition', state[stateIndex]);
@@ -193,14 +193,51 @@ document.addEventListener('DOMContentLoaded', function () {
         exportButton.addEventListener('click', function() {
             socket.send(JSON.stringify({ command: 'export'}));
         });
-    } else {
-        console.error('Button not found.');
     }
 
     let backButton = document.querySelector('button[name="backToSettings"]');
     if (backButton) {
         backButton.addEventListener('click', backToSettings);
-    } else {
-        console.error('Button not found.');
     }
+
+    // Select the button container
+    const filmPosButtonContainer = document.getElementById('button-container');
+
+    // Event handler function for buttons
+    function handleFilmPosButtonClick(event) {
+        const buttonName = event.target.name;
+        
+        switch(buttonName) {
+            case 'jleft':
+                console.log('Jumping Left');
+                socket.send(JSON.stringify({ command: 'filmPosJumpLeft'}));
+                break;
+            case 'left':
+                console.log('Moving Left');
+                socket.send(JSON.stringify({ command: 'filmPosLeft'}));
+                break;
+            case 'right':
+                console.log('Moving Right');
+                socket.send(JSON.stringify({ command: 'filmPosRight'}));
+                break;
+            case 'jright':
+                console.log('Jumping Right');
+                socket.send(JSON.stringify({ command: 'filmPosJumpRight'}));
+                break;
+            case 'filmPosSelected':
+                socket.send(JSON.stringify({ command: 'filmPosSelected'}));
+                advanceState(1); // Advance to scanning
+                break;
+            default:
+                console.log('ERROR: FILM POSITION BUTTON NOT FOUND');
+        }
+    }
+
+    // Add event listeners to each button
+    filmPosButtonContainer.addEventListener('click', function(event) {
+        if (event.target.tagName === 'BUTTON') {
+            handleFilmPosButtonClick(event);
+        }
+    });
 });
+
