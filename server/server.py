@@ -216,6 +216,7 @@ def process_command(command, client_socket):
         if command['type'] == 'click':
             pyautogui.click(command['x'], command['y'])
             print("Clicking at: " + str(command['x']) + ", " + str(command['y']))
+            time.sleep(0.5)
 
         elif command['type'] == 'screenshot':
             global screenshot_task
