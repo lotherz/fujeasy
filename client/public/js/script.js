@@ -181,13 +181,6 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error('Form not found.');
     }
 
-    function backToSettings() {
-        if (stateIndex > 1) {
-            toggleDivVisibility(state[0], state[stateIndex]);
-            stateIndex = 0;
-        }
-    }
-
     let exportButton = document.querySelector('button[name="export"]');
     if (exportButton) {
         exportButton.addEventListener('click', function() {
@@ -195,9 +188,28 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    let backButton = document.querySelector('button[name="backToSettings"]');
-    if (backButton) {
-        backButton.addEventListener('click', backToSettings);
+    function backToSettings() {
+        if (stateIndex > 1) {
+            toggleDivVisibility(state[0], state[stateIndex]);
+            stateIndex = 0;
+        }
+    }
+
+    let backButtons = document.querySelectorAll('button[name="backToSettings"]');
+    if (backButtons.length > 0) {
+        backButtons.forEach(button => {
+            button.addEventListener('click', backToSettings);
+        });
+    }
+
+    function acceptFinishedRoll() {
+        socket.send(JSON.stringify({ command: 'finishedRoll'}));
+        advanceState(1);
+    }
+
+    let finishedRoll = document.querySelector('button[name="finishedRoll"]');
+    if (finishedRoll) {
+        finishedRoll.addEventListener('click', acceptFinishedRoll);
     }
 
     // Select the button container
@@ -226,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 break;
             case 'filmPosSelected':
                 socket.send(JSON.stringify({ command: 'filmPosSelected'}));
-                advanceState(1); // Advance to scanning
+                advanceState(1); 
                 break;
             default:
                 console.log('ERROR: FILM POSITION BUTTON NOT FOUND');

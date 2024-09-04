@@ -59,7 +59,8 @@ const clickLocations = {
     'filmPosJumpLeft': [[290, 500]],
     'filmPosJumpRight': [[335, 500]],
     'filmPosRight': [[380, 500]],
-    'filmPositionSelected': [[570, 500]]
+    'filmPosSelected': [[570, 500]],
+    'finishedRoll' : [[500, 500], [490, 360]]
 };
 
 wss.on('connection', (ws) => {
@@ -613,8 +614,18 @@ function handleCommand(command) {
             break;
         case 'filmPosSelected':
             console.log('Film position selected');
-            sendClick(clickLocations.filmPositionSelected[0][0], clickLocations.filmPositionSelected[0][1]);
+            sendClick(clickLocations.filmPosSelected[0][0], clickLocations.filmPosSelected[0][1]);
             break;
+        case 'finishedRoll':
+            console.log('Finished roll');
+            sendClick(clickLocations.finishedRoll[0][0], clickLocations.finishedRoll[0][1]);
+            
+            setTimeout(() => {
+                sendClick(clickLocations.finishedRoll[1][0], clickLocations.finishedRoll[1][1]);
+            }, 1000); // 500 milliseconds delay (adjust the value as needed)
+            
+            break;
+            
         default:
             console.log('\x1b[31m%s\x1b[0m', 'Invalid command');
             input();
